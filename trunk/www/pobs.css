@@ -1,7 +1,7 @@
 body {
 
   font-family: Arial, sans serif; 
-  font-size: large;
+  font-size: small;
   vertical-align: top;
 
 }
@@ -9,6 +9,12 @@ body {
 td {
 
   font-family: Verdana, sans serif; 
-  font-size: small;
   
+}
+
+.warning { 
+
+  color: red;
+  font-weight: bold;
+
 }

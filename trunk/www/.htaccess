@@ -1,0 +1,4 @@
+DirectoryIndex pobs.php index.php index.html index.htm
+php_flag register_globals off
+php_flag magic_quote_gpc off
+php_flag allow_call_time_pass_reference off

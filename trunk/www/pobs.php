@@ -26,6 +26,16 @@
 
 */
 
+set_include_path(str_replace('.:', '../:', get_include_path()));
+error_reporting(E_ALL ^ E_NOTICE);
+
+require_once 'pobs.conf.php';
+require_once 'libs/pobs_core.lib.php';
+require_once 'libs/pobs_www.lib.php';
+
+$POBS = &new PobsWWW;
+$API  = &new PobsCore($POBS);
+
 ?>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
@@ -47,246 +57,55 @@
 
 <?php
 
-if (!empty($_POST)) extract($_POST);
-    else if (!empty($HTTP_POST_VARS)) extract($HTTP_POST_VARS);
+$API->check_safe_mode();
 
-    if ( isset( $OK ) ) CheckSafeMode();
+if (isset($_POST['OK'])) {
 
-    $StartTime = time();
+    if (!is_readable($_POST['SourceDir'])) {
 
-    $TotalFileSizeRead = 0;
-    $TotalFileSizeWrite = 0;
-    $NewlinesReplaced = 0;
+        trigger_error('Source Directory ' . $_POST['SourceDir'] . ' does not exist or is not readable', E_USER_ERROR);
 
-    $ExVarArray = array();
-    $FuncArray = array();
-    $ClassArray = array();
-    $ConstArray = array();
-    $VarArray = array();
-    $ObjectVarArray = array();
-    $JSVarArray = array();
-    $JSFuncArray = array();
+    }
 
-    $LineArray = array();
-    $FileArray = array();
-    
-    $UdExcVarArrayWild = array();
-    $UdExcVarArrayDliw=array(); 
-    $UdExcFileArrayRegEx = array();
-    $UdExcDirArrayRegEx = array();
-    
-    $ExcludedLines = array();
-    $CopyrightText = trim($CopyrightText);
-    $CopyrightText = str_replace("\r","", $CopyrightText); // without this it was making double 
-                                                           // newlines on Windows XP
-                                                           // just hope it works in UNIX as well
+    if (!is_writeable($_POST['TargetDir'])) {
 
-    if ( isset( $OK ) ) // if action parameter in querystring
-    {
-        if (!(is_readable($SourceDir)))
-        {
-            echo "Error. Source Directory ".$SourceDir." is not readable. Program will terminate<br>";
-            exit;
-        }
+        trigger_error('Target Directory ' . $_POST['TargetDir'] . ' does not exist or is not writeable', E_USER_ERROR);
 
-        if (!(is_writeable($TargetDir)))
-        {
-            echo "Error. Target Directory ".$TargetDir." is not writeable. Program will terminate<br>";
-            exit;
-        }
+    }
 
-        echo '<h3>Execute POBS : &quot;'.$SourceDir.'&quot; =&gt; &quot;'.$TargetDir.'&quot;</h3>';
+    echo '<h3>Execute POBS: ' . $_POST['SourceDir'] . ' =&gt; ' . $_POST['TargetDir'] . '</h3>';
      
-        GetWildCards();
-        ScanSourceFiles();
+    $API->get_wild_cards();
+    $API->scan_source_files();
 
-        krsort( $FuncArray );
-        krsort( $ConstArray );
-        krsort( $VarArray );
-        sort( $FileArray );
-
-        if(!$ReplaceClasses)
-        {
+    if (!$_POST['ReplaceClasses']) {
             
-//foreach($ClassArray as $key)
-//  echo "Class = $key<br>";
-            // remove class names from functions
-            // this way we also remove all constructors
-            $tempFuncArray = array();
-            foreach($FuncArray as $Key => $Value)
-            {
-                if(!in_array($Key, $ClassArray))
-                {
-                    $tempFuncArray[$Key] = $Value;
-                }
+        $tempFuncArray = array();
+
+        foreach ($API->FuncArray as $key => $value) {
+
+            if (!in_array($key, $API->ClassArray)) {
+
+                $tempFuncArray[$key] = $value;
+
             }
 
-            $FuncArray = $tempFuncArray;
         }
 
-        ShowArrays();
-        WriteTargetFiles();
+        $API->FuncArray = $tempFuncArray;
+
     }
-    else 
-        ShowScreen();
 
+    ShowArrays();
+    WriteTargetFiles();
 
-function ShowScreen() {
-    global $TimeOut, $FileExtArray, $JSFileExtArray, $TargetDir, $SourceDir, $UdExcFuncArray, $UdExcVarArray, $UdExcConstArray, $StdObjRetFunctionsArray;
-    global $ReplaceFunctions, $ReplaceConstants, $ReplaceVariables, $RemoveComments, $RemoveIndents, $ConcatenateLines;
-    global $FilesToReplaceArray, $UdExcFileArray, $UdExcDirArray;
-        
-?>  
-    <TABLE CELLPADDING=0 WIDTH=100% CELLSPACING=0 BORDER=0>
-        <TR>
-            <TD BGCOLOR=#6699CC VALIGN=TOP><A HREF="http://pobs.mywalhalla.net" TARGET=_new><IMG SRC="pobslogo.gif" HSPACE=20 WIDTH=150 HEIGHT=61 BORDER=0></A><TD>
-            <TD BGCOLOR=#6699CC VALIGN=TOP><br><b>A PHP Obfuscator<br>Version 0.99</TD>
-        </TR>
-    </TABLE>
-    <? CheckSafeMode(); ?>
-    <TABLE CELLPADDING=3 WIDTH=100% CELLSPACING=0 BORDER=1 BORDERCOLOR=#000000>
-        <TR><TD BGCOLOR=#6699CC VALIGN=TOP> <CENTER><DIV style="font-size:13pt"><b>Settings</DIV></CENTER></TD></TR>
-        <TR><TD><CENTER>For the most up-to-date documentation, visit <A HREF="http://pobs.mywalhalla.net" TARGET="STD">http://pobs.mywalhalla.net</A></CENTER></TD></TR>
-    </TABLE>
-    <br>
-    <TABLE CELLPADDING=3 WIDTH=100% CELLSPACING=0 BORDER=0>
-        <TR>
-            <TD WIDTH=60% VALIGN=TOP>
-            <TABLE WIDTH=100% CELLPADDING=3 CELLSPACING=0 BORDER=1 BORDERCOLOR=#000000>
-                <FORM METHOD="POST" ACTION="<? echo $GLOBALS['HTTP_SERVER_VARS']['PHP_SELF']?>">
-                <TR><TD BGCOLOR=#E6E6E6 VALIGN=TOP><b>TimeOut (sec)</b></TD></TR>
-                <TR><TD><? echo $TimeOut ?></TD></TR>
-                <TR><TD BGCOLOR=#E6E6E6 VALIGN=TOP><b>Source Directory</b></TD></TR>
-                <TR><TD><INPUT TYPE=TEXT NAME=SourceDir VALUE="<? echo $SourceDir ?>" SIZE=70></TD></TR>
-                <TR><TD BGCOLOR=#E6E6E6 VALIGN=TOP><b>Target Directory</b></TD></TR>
-                <TR><TD><INPUT TYPE=TEXT NAME=TargetDir VALUE="<? echo $TargetDir ?>" SIZE=70></TD></TR>
-                <TR><TD BGCOLOR=#E6E6E6 VALIGN=TOP>
-                <TABLE WIDTH=100% BORDER=0 CELLSPACING=0 CELLPADDING=0>
-                <TR><TD width=50%><b>Allowed File Extensions</b></TD><TD width=50%><b>Allowed JavaScriptFile Extensions</b></TD></TR>
-                </TABLE>
-                </TD></TR>
-                <TR><TD>
-                <TABLE WIDTH=100% BORDER=0 CELLSPACING=0 CELLPADDING=0>
-                <?
-                $maxcount = (count($FileExtArray)>count($JSFileExtArray) ? count($FileExtArray) : count($JSFileExtArray));
-                for($i=0; $i<$maxcount; $i++)
-                  echo "<TR><TD width=50%>".($FileExtArray[$i]!='' ? "$i: ".$FileExtArray[$i] : "&nbsp;")."</TD><TD width=50%>".($JSFileExtArray[$i]!='' ? "$i: ".$JSFileExtArray[$i] : "&nbsp;")."</TD></TR>\n";
-                ?>
-                </TABLE>
-                <TR><TD BGCOLOR=#E6E6E6 VALIGN=TOP><b>Replacements</b></TD></TR>
-                <TR><TD>
-                    <TABLE BORDER=0 CELLPADDING=0 CELLSPACING=2>
-                        <TR><TD WIDTH=130 valign="bottom">Classes</TD><TD WIDTH=10>&nbsp;</TD><TD><input type="checkbox" name="ReplaceClasses" value="1" checked></TD></TR>
-                        <TR><TD valign="bottom">Functions</TD><TD WIDTH=10>&nbsp;</TD><TD><input type="checkbox" name="ReplaceFunctions" value="1" checked></TD></TR>
-                        <TR><TD valign="bottom">Constants</TD><TD WIDTH=10>&nbsp;</TD><TD><input type="checkbox" name="ReplaceConstants" value="1" checked></TD></TR>
-                        <TR><TD valign="bottom">Variables</TD><TD WIDTH=10>&nbsp;</TD><TD><input type="checkbox" name="ReplaceVariables" value="1" checked></TD></TR>
-                        <TR><TD valign="bottom">JavaScript (Functions & Variables)</TD><TD WIDTH=10 valign="top">&nbsp;</TD><TD><input type="checkbox" name="ReplaceJS" value="1" checked>&nbsp;&nbsp;<? echo "+ files with extensions: "; foreach($JSFileExtArray as $Key => $Value ) echo '<b>'.$Value.'</b>,'; ?></TD></TR>
-                    </TABLE>
-                </TD></TR>
-                <TR><TD BGCOLOR=#E6E6E6 VALIGN=TOP><b>Removals</b></TD></TR>
-                <TR><TD>
-                    <TABLE BORDER=0 CELLPADDING=0 CELLSPACING=2>
-                       <TR><TD WIDTH=130 valign="bottom">Comments</TD><TD WIDTH=10>&nbsp;</TD><TD><input type="checkbox" name="RemoveComments" value="1" checked>
-                        (Always preserve first <INPUT TYPE="text" SIZE="3" NAME="KeptCommentCount" VALUE="0"> comments)
-                        </TD></TR>
-                        <TR><TD valign="bottom">Indents</TD><TD WIDTH=10>&nbsp;</TD><TD><input type="checkbox" name="RemoveIndents" value="1" checked></TD></TR>
-                        <TR><TD valign="bottom">Returns</TD><TD WIDTH=10>&nbsp;</TD><TD><input type="checkbox" name="ConcatenateLines" value="1"></TD></TR>
-                    </TABLE>
-                </TD></TR>
-                <TR><TD BGCOLOR=#E6E6E6 VALIGN=TOP><b>File system</b></TD></TR>
-                <TR><TD>
-                    <INPUT TYPE=CHECKBOX NAME="ReplaceNewer" CHECKED>Replace edited files only<br>
-                    <INPUT TYPE=CHECKBOX NAME="RecursiveScan" CHECKED>Recursive scan (into sub-directory)<br>
-                    <INPUT TYPE=CHECKBOX NAME="CopyAllFiles" CHECKED>Copy all files (not in allowed file extensions) from source to dest <br>
-                </TD></TR>
-                <TR><TD>
-                    <b>Copyright Text</b> (to put on top of every processed file)<br>
-                    <INPUT TYPE=CHECKBOX NAME="CopyrightPHP" value=1>on top of PHP files<br>
-                    <INPUT TYPE=CHECKBOX NAME="CopyrightJS" value=1>on top of JavaScript files<br>
-                    <TEXTAREA name="CopyrightText" ROWS=3 COLS=60></TEXTAREA>
-                </TD></TR>                                
-                <TR>
-                    <TD BGCOLOR=#E6E6E6 ALIGN=CENTER VALIGN=TOP>
-                    <INPUT TYPE=SUBMIT NAME=OK VALUE="Start processing">
-                    </TD>
-                </TR>
-                </FORM>
-            </TABLE>
-            </TD>
-            <TD WIDTH=20%>
-            <TABLE CELLPADDING=3 WIDTH=100% CELLSPACING=0 BORDER=1 BORDERCOLOR=#000000>
-                <TR><TD BGCOLOR=#E6E6E6 VALIGN=TOP><b>Exclude Functions</b></TD></TR>
-                <TR><TD><? foreach($UdExcFuncArray as $Key => $Value ) echo $Key.': '.$Value.'<br>'; ?></TD></TR>
-                <TR><TD BGCOLOR=#E6E6E6 VALIGN=TOP><b>Exclude Constants</b></TD></TR>
-                <TR><TD><? foreach($UdExcConstArray as $Key => $Value ) echo $Key.': '.$Value.'<br>'; ?></TD></TR>
-                <TR><TD BGCOLOR=#E6E6E6 VALIGN=TOP><b>Functions returning objects (special handling)</b></TD></TR>
-                <TR><TD><? foreach($StdObjRetFunctionsArray as $Key => $Value ) echo $Key.': '.$Value.'<br>'; ?></TD></TR>
-            </TABLE>
-            </TD>
-            <TD WIDTH=20%>
-            <TABLE CELLPADDING=3 WIDTH=100% CELLSPACING=0 BORDER=1 BORDERCOLOR=#000000>
-                <TR><TD BGCOLOR=#E6E6E6 VALIGN=TOP><b>Exclude Variables</b></TD></TR>
-                <TR><TD><? foreach($UdExcVarArray as $Key => $Value ) echo $Key.': '.$Value.'<br>'; ?></TD></TR>
-                <TR><TD BGCOLOR=#E6E6E6 VALIGN=TOP><b>Exclude Files</b></TD></TR>
-                <TR><TD><? foreach($UdExcFileArray as $Key => $Value ) echo $Key.': '.$Value.'<br>'; ?></TD></TR>
-                <TR><TD BGCOLOR=#E6E6E6 VALIGN=TOP><b>Exclude Directories</b></TD></TR>
-                <TR><TD><? foreach($UdExcDirArray as $Key => $Value ) echo $Key.': '.$Value.'<br>'; ?></TD></TR>
-            </TABLE>
-            </TD>
-        </TR>
-    </TABLE>
-<?
+} else {
+
+    $POBS->show_initial_screen();
+
 }
 
-function GetWildCards() {
-    // Scan UdExcVarArray and move the Variables with Wildcards (*) to a separate array
-    // Separating the variables with wildcards speeds up the scanning and checking process
-    global $UdExcVarArray, $UdExcVarArrayWild, $UdExcVarArrayDliw; 
-    global $UdExcFileArray, $UdExcFileArrayRegEx, $UdExcDirArray, $UdExcDirArrayRegEx;
-    
-    // process Exclude File array
-    foreach($UdExcFileArray as $value)
-    {
-        // convert it to regular expression
-        
-        $value = str_replace(".", "\\.", $value);
-        $value = str_replace("*", ".*", $value);
-        $value = "/^$value/i";
-        $UdExcFileArrayRegEx[] = $value;
-    }
-    
-    foreach($UdExcDirArray as $value)
-    {
-        // convert it to regular expression
-        $value = str_replace(".", "\\.", $value);
-        $value = str_replace("\\\\", "\\/", $value);
-        $value = str_replace("\\", "\\/", $value);
-        $value = str_replace("/", "\\/", $value);
-        $value = str_replace("*", ".*", $value);
-        $value = "/$value/i";
-        $UdExcDirArrayRegEx[] = $value;
-    }
 
-    foreach( $UdExcVarArray as $Key => $Value )
-    {
-        // SB adding support for wildcards that are wild at the front end (e.g. "*_x"
-        //$pos=strrpos($Value, "*");
-        //if ($pos!==FALSE) { 
-        $pos = strrpos(' '.$Value, "*");
-        if ($pos>1) { //true of properly formed standard wildcards (* at end)
-            echo 'WildCardValue:'.$Value.'<br>';
-            array_push($UdExcVarArrayWild, str_replace( '*', '', $Value ) );
-            $UdExcVarArray[$Key] = 'Niets'.$Key;
-        }
-        if ($pos==1) { //true of backwards wildcards (* at front)
-            echo 'DliwCardValue:'.$Value.'<br>';
-            array_push($UdExcVarArrayDliw, str_replace( '*', '', $Value ) );
-            $UdExcVarArray[$Key] = 'Niets'.$Key;
-        }
-    }
-
-    echo '&nbsp;<br>';
-}
 
 function findScriptTagInFile($index, $LineArray)
 {
@@ -326,180 +145,11 @@ function findScriptTagInFile($index, $LineArray)
   return false;
 }
 
-function ScanSourceFiles( $path = '' )
-{
-    global $ExVarArray, $FuncArray, $ClassArray, $ConstArray, $VarArray, $LineArray, $FileArray;
-    global $SourceDir, $TargetDir, $FileExtArray, $JSFileExtArray, $JSFuncArray, $ReplaceJS, $ReplaceFunctions, $ReplaceVariables, $ReplaceConstants, $MaxFiles;
-    global $RecursiveScan, $CopyAllFiles; // File system option...
-    global $StdExcJSFuncArray, $UdExcVarArray, $UdExcVarArrayWild, $UdExcFuncArray, $UdExcConstArray, $UdExcFileArrayRegEx, $UdExcDirArrayRegEx;
-    
-    $dir = dir( $SourceDir.$path.'/' );
-    while( $FileNaam = $dir->read() )
-    {
-        $fileName = $path.'/'.$FileNaam;
-        $excludeFile = FALSE;
-        $excludeDirectory = FALSE;
-        
-        if ( is_file( $SourceDir.$fileName ) )
-        { 
-            // check if file has the proper suffix
-            $extpos = strrpos($FileNaam, ".");
-
-            if($extpos>0)
-              $Suffix = substr($FileNaam,$extpos+1);
-            else
-              $Suffix = md5(rand()); // generate some non existing extension
-
-            if ((in_array($Suffix, $FileExtArray) || ($extpos==0 && in_array(".", $FileExtArray)) || (in_array($Suffix, $JSFileExtArray) && $ReplaceJS)) && sizeof($FileArray) < $MaxFiles)
-            {
-                // check if the file is in UdExcFileArray
-                foreach($UdExcFileArrayRegEx as $value)
-                {
-                    // compare file name with regular expression  
-                    if(preg_match($value, $FileNaam))
-                    {
-                        $excludeFile = TRUE;
-                    }
-                }
-                
-                if($excludeFile == FALSE)
-                {
-                  if(in_array($Suffix, $JSFileExtArray))
-                  {
-                    // it is JavaScript file
-                    echo "<b>+ Scanning JavaScript File: ".substr($fileName, 1)."</b><br>\n";
-                    array_push( $FileArray, substr($fileName, 1) );
-                    $LineArray = file( $SourceDir.$fileName );
-                    flush();
-                    
-                    for ($rgl = 0; $rgl<sizeof($LineArray); $rgl++)
-                    {
-                      $Line = trim(strtolower($LineArray[$rgl]));
-
-                      if (($ReplaceJS) && substr($Line, 0, 9)=="function " ) // Search for Function declaration
-                      { 
-                        // we have to find out if function is JavaScript Function or PHP function
-                        $posEinde = strpos($Line, "(");
-                        $FunctieNaam = substr(trim($LineArray[$rgl]), 0, $posEinde);
-                        $FunctieNaam = trim(preg_replace("/function /i", "", $FunctieNaam));
-                        $FunctieNaam = trim(preg_replace("/\&/i", "", $FunctieNaam));
-                        if ( empty($JSFuncArray[$FunctieNaam]) and !(in_array($FunctieNaam,$StdExcJSFuncArray))) $JSFuncArray[$FunctieNaam]="F".substr(md5($FunctieNaam), 0,8);
-                      }
-                      
-                      if ($ReplaceJS) SearchVars( $LineArray[$rgl] ); // *** Search JavaScript Variables
-                    }
-                  }
-                  else
-                  {
-                    // it should be PHP file
-                    echo "<b>+ Scanning File: ".substr($fileName, 1)."</b><br>\n";
-                    array_push( $FileArray, substr($fileName, 1) );
-                    $LineArray = file( $SourceDir.$fileName );
-                    flush();
-                
-                    for ($rgl = 0; $rgl<sizeof($LineArray); $rgl++)
-                    {
-                        $Line = trim(strtolower($LineArray[$rgl]));
-                    
-                        if ( ($ReplaceFunctions || $ReplaceJS) && substr($Line, 0, 9)=="function " ) // Search for Function declaration
-                        { 
-                            $posEinde = strpos($Line, "(");
-                            $FunctieNaam = substr(trim($LineArray[$rgl]), 0, $posEinde);
-                            $FunctieNaam = trim(preg_replace("/function /i", "", $FunctieNaam));
-                            $FunctieNaam = trim(preg_replace("/\&/i", "", $FunctieNaam));                          
-                            
-                            if($FunctieNaam == 'doLoad')
-                            	$FunctieNaam = 'doLoad';
-                            // we have to find out if the function is JavaScript Function or PHP function
-                            // we do it by checking if function is between '<script' and '</script' tags
-                            if(findScriptTagInFile($rgl, $LineArray))
-                            { 
-                              // it is JS function
-                              if ( empty($JSFuncArray[$FunctieNaam]) and !(in_array($FunctieNaam,$StdExcJSFuncArray))) 
-                              {
-                              	$JSFuncArray[$FunctieNaam]="F".substr(md5($FunctieNaam), 0,8);
-                              }
-                            }
-                            else
-                            {
-                              // it is PHP function
-                              if ( empty($FuncArray[$FunctieNaam]) and !(in_array($FunctieNaam,$UdExcFuncArray))) $FuncArray[$FunctieNaam]="F".substr(md5($FunctieNaam), 0,8);
-                            }
-                        }
-                        else if ( $ReplaceFunctions && preg_match("/^[ \t]*class[ \t]+([0-9a-zA-Z_]+)[ \t\n\r\{]/U", $LineArray[$rgl], $matches )) // Search for Class declaration
-                        {                                         
-                            // store class name to the functions array - class name has to be same as constructor name
-                            $FunctieNaam = $matches[1];
-                            if ( empty($FuncArray[$FunctieNaam]) and !(in_array($FunctieNaam,$UdExcFuncArray))) $FuncArray[$FunctieNaam]="F".substr(md5($FunctieNaam), 0,8);
-                            if ( !in_array($FunctieNaam, $ClassArray ) and !(in_array($FunctieNaam,$UdExcFuncArray))) $ClassArray[] = $FunctieNaam;
-                        }
-                        elseif ( $ReplaceConstants && preg_match( "/define[ \t(]/i", substr($Line, 0, 7) ) ) // Search for Constant declaration 
-                        {
-                            $posStart = strpos($Line, "(");
-                            $posEnd = strpos($Line, ",");
-                            $ConstantName = substr(trim($LineArray[$rgl]), ($posStart+1), ($posEnd-$posStart-1));
-                            $ConstantName = preg_replace('/[\"\']/',"",$ConstantName);
-                            $posDollar = strpos($ConstantName, "$"); // name of constant may not be a variable
-                            if ( $posDollar === FALSE && $ConstantName != 'SID' ) 
-                            { 
-                                // doesn't convert SID constant (PHP4)
-                                if (!($ConstArray[$ConstantName]) and !(in_array($ConstantName,$UdExcConstArray))) 
-                                { 
-                                    $ConstArray[$ConstantName]="C".substr(md5($ConstantName), 0,8);
-                                }
-                            }
-                        }
-                        if ( $ReplaceVariables || $ReplaceJS) SearchVars( $LineArray[$rgl] ); // *** Search Variables
-                    }
-                  }
-                }
-                else
-                {
-                    // file was excluded, just copy it
-                    echo "- <font color=blue>Excluded</font>, just copy Filename: ".substr($fileName, 1)."<br>\n";
-                    copy(  $SourceDir.$fileName,  $TargetDir.$fileName );
-                }
-            }
-            elseif ( $CopyAllFiles )
-            {
-                echo "- Copy Filename: ".substr($fileName, 1)."<br>\n";
-                copy(  $SourceDir.$fileName,  $TargetDir.$fileName );
-            }
-        }
-        else if ( $RecursiveScan && is_dir( $SourceDir.$fileName ) && $FileNaam != "." && $FileNaam != ".." )
-        {
-            // check if the directory is in UdExcDirArray
-            foreach($UdExcDirArrayRegEx as $value)
-            {
-                // compare directory name with regular expression                    
-                if(preg_match($value, $SourceDir.$fileName))
-                    $excludeDirectory = TRUE;
-            }
-
-            if($excludeDirectory == TRUE)
-            {
-              echo "<font color=blue>Directory $SourceDir.$fileName excluded, not copied!</font><br>";                      
-            }
-            else
-            {
-              
-                if(!is_dir($TargetDir.$fileName))
-                {
-                    if ( @mkdir( $TargetDir.$fileName, 0707 ) ) echo 'Creating Directory : '.$TargetDir.$fileName.'.<br>';
-                    else echo '- Creating Directory : '.$TargetDir.$fileName.' <FONT COLOR=orange>Warning: Creation failed.</b></FONT><br>';
-                }
-                
-                ScanSourceFiles( $fileName );
-            }
-        }
-    }
-    $dir->close();
-}
 
 function ShowArrays() {
     global $FuncArray, $VarArray, $JSVarArray, $JSFuncArray, $ConstArray, $FileArray, $UdExcVarArray, $UdExcVarArrayWild;
 
-    echo    '<br>&nbsp;<br><hr color="#000000" height=1 noshade><h3>Replaced elements :</h3>';
+    echo '<hr color="#000000" height="1" noshade /><h3>Replaced elements :</h3>';
 
     DisplayArray( $FuncArray, "Found functions or classes that will be replaced", $BgColor="FFF0D0");
     DisplayArray( $ConstArray, "Found constants that will be replaced", $BgColor="8DCFF4");
@@ -533,7 +183,7 @@ function WriteTargetFiles() {
 
     $count = 0;
 
-    foreach( $FileArray as $Key => $FileName)   
+    foreach( $FileArray as $key => $FileName)   
     {
         $count++;
         $ReplaceFile = TRUE;
@@ -579,7 +229,7 @@ function SearchVars($Line)
     global $VarArray, $StdExcVarArray, $StdExcKeyArray, $UdExcVarArray, $UdExcVarArrayWild, $UdExcVarArrayDliw, $ObjectVarArray, $JSVarArray, $StdObjRetFunctionsArray;
 
     // special handling for functions returning objects
-    foreach($StdObjRetFunctionsArray as $Key => $Value )
+    foreach($StdObjRetFunctionsArray as $key => $Value )
     {
         if ( preg_match('/\$([0-9a-zA-Z_]+)[ \t]*\=[ \t]*'.$Value.'/', $Line, $matches )) // Search for variables, that are objects
         {                                         
@@ -606,7 +256,7 @@ function SearchVars($Line)
         if (!$JSVarArray[$VarName] && !(in_array($VarName,$StdExcVarArray)) && !(in_array($VarName,$UdExcVarArray)))
         { 
             // check in Wildcards Array
-            foreach( $UdExcVarArrayWild as $Key => $Value )
+            foreach( $UdExcVarArrayWild as $key => $Value )
            {
                if (substr($VarName, 0, strlen($Value)) == $Value )
               {
@@ -616,7 +266,7 @@ function SearchVars($Line)
            }
 
           // SB check in Dliwcards Array (the wild part's on the front)
-          foreach( $UdExcVarArrayDliw as $Key => $Value )
+          foreach( $UdExcVarArrayDliw as $key => $Value )
          {
              if (substr($VarName, 0 - strlen( $Value ) ) == $Value )
              {
@@ -638,7 +288,7 @@ function SearchVars($Line)
         if (!$VarArray[$VarName] && !(in_array($VarName,$StdExcVarArray)) && !(in_array($VarName,$UdExcVarArray)))
         { 
             // check in Wildcards Array
-            foreach( $UdExcVarArrayWild as $Key => $Value )
+            foreach( $UdExcVarArrayWild as $key => $Value )
             {
                 if (substr($VarName, 0, strlen($Value)) == $Value )
                 {
@@ -648,7 +298,7 @@ function SearchVars($Line)
             }
 
             // SB check in Dliwcards Array (the wild part's on the front)
-            foreach( $UdExcVarArrayDliw as $Key => $Value )
+            foreach( $UdExcVarArrayDliw as $key => $Value )
             {
                 if (substr($VarName, 0 - strlen( $Value ) ) == $Value )
                 {
@@ -905,23 +555,23 @@ function ReplaceThem($FileName)
     // *** REPLACE FUNCTIONNAMES
     if ( $ReplaceFunctions)
     {
-        foreach( $FuncArray as $Key => $Value ) 
+        foreach( $FuncArray as $key => $Value ) 
         {
-            if ( strlen($Key) && strpos(strtolower($contents), strtolower($Key)) !== FALSE ) // to speed up things, check if variable name is, in any way, present in the file
+            if ( strlen($key) && strpos(strtolower($contents), strtolower($key)) !== FALSE ) // to speed up things, check if variable name is, in any way, present in the file
             {
-                $contents = preg_replace("/([^a-zA-Z0-9_]+)".$Key."[ \t]*\\(/i","\\1".$Value."(", $contents); //werkt
+                $contents = preg_replace("/([^a-zA-Z0-9_]+)".$key."[ \t]*\\(/i","\\1".$Value."(", $contents); //werkt
 
                 if ($ReplaceObjects)
                 {
-                    $contents = preg_replace('/([^a-zA-Z0-9_]+)('.$Key.')::/','\1'.$Value.'::', $contents); // objects
+                    $contents = preg_replace('/([^a-zA-Z0-9_]+)('.$key.')::/','\1'.$Value.'::', $contents); // objects
                 }
                 if ($ReplaceClasses)
                 {
-                    $contents = preg_replace('/([^0-9a-zA-Z_])class[ \t]*('.$Key.')([^0-9a-zA-Z_])/i','\1class '.$Value.'\3', $contents); // class declaration
+                    $contents = preg_replace('/([^0-9a-zA-Z_])class[ \t]*('.$key.')([^0-9a-zA-Z_])/i','\1class '.$Value.'\3', $contents); // class declaration
                  }
 
-                 $contents = preg_replace('/([^0-9a-zA-Z_])extends[ \t]*('.$Key.')([^0-9a-zA-Z_])/i','\1extends '.$Value.'\3', $contents); // extended or derived class declaration
-                 $contents = preg_replace('/([^0-9a-zA-Z_])new[ \t]+('.$Key.')([^0-9a-zA-Z_(])/i','\1new '.$Value.'\3', $contents); // extended or derived class declaration
+                 $contents = preg_replace('/([^0-9a-zA-Z_])extends[ \t]*('.$key.')([^0-9a-zA-Z_])/i','\1extends '.$Value.'\3', $contents); // extended or derived class declaration
+                 $contents = preg_replace('/([^0-9a-zA-Z_])new[ \t]+('.$key.')([^0-9a-zA-Z_(])/i','\1new '.$Value.'\3', $contents); // extended or derived class declaration
             }
         }
     }
@@ -936,12 +586,12 @@ function ReplaceThem($FileName)
         else 
             $ReplaceFieldnames = FALSE;
 
-        foreach( $VarArray as $Key => $Value )
+        foreach( $VarArray as $key => $Value )
         {
-            if ( strlen($Key) && strpos(strtolower($contents), strtolower($Key)) !== FALSE ) // to speed up things, check if variable name is, in any way, present in the file
+            if ( strlen($key) && strpos(strtolower($contents), strtolower($key)) !== FALSE ) // to speed up things, check if variable name is, in any way, present in the file
             {
-                $contents = preg_replace('/([$&?{])('.$Key.')([^0-9a-zA-Z_])/m','\1'.$Value.'\3', $contents);  // normal variables and parameters
-                $contents = preg_replace('/(&amp;)('.$Key.')([^0-9a-zA-Z_])/m','\1'.$Value.'\3', $contents);  // variable in <A> tag with &amp;
+                $contents = preg_replace('/([$&?{])('.$key.')([^0-9a-zA-Z_])/m','\1'.$Value.'\3', $contents);  // normal variables and parameters
+                $contents = preg_replace('/(&amp;)('.$key.')([^0-9a-zA-Z_])/m','\1'.$Value.'\3', $contents);  // variable in <A> tag with &amp;
 
                 // process javascript code                
                 preg_match_all('/\<SCRIPT.*>(.*)<\/SCRIPT>/Uis',$contents,$matches);  // in case there are more <SCRIPT> sections within one file
@@ -953,16 +603,16 @@ function ReplaceThem($FileName)
 
                   $replaced = $orig;
 
-                  if ( !in_array($Key, $StdExcJSVarArray) )
+                  if ( !in_array($key, $StdExcJSVarArray) )
                   {
-                     $replaced = preg_replace('/(.*?[ \.])('.$Key.')([ \t\.\=\!].*)/is','\1'.$Value.'\3', $orig);  // javascript variables
-//                  $replaced = preg_replace('/(\=[ \t]*)('.$Key.')([ \t]*[\;\.])/is','\1'.$Value.'\3', $replaced);  // javascript variables
+                     $replaced = preg_replace('/(.*?[ \.])('.$key.')([ \t\.\=\!].*)/is','\1'.$Value.'\3', $orig);  // javascript variables
+//                  $replaced = preg_replace('/(\=[ \t]*)('.$key.')([ \t]*[\;\.])/is','\1'.$Value.'\3', $replaced);  // javascript variables
 
-//                  $replaced = preg_replace('/(.*var[ \t\,a-zA-Z0-9_]+)('.$Key.')([ \t]*[\=\;\,])/Uis','\1'.$Value.'\3', $replaced);  // javascript var defines (var XXX;)
-//                  $replaced = preg_replace('/([^0-9a-zA-Z_])('.$Key.')([ \t]*[\+\-\*\/\[\;\,\.\)])/is','\1'.$Value.'\3', $replaced);  // javascript arrays (xxx[])    // \= MISSING
-//                  $replaced = preg_replace('/((?:\[|\[[ \t\'\"\+\-\*\/a-zA-Z0-9_]*[^a-zA-Z0-9_]))('.$Key.')((?:\]|[^a-zA-Z0-9_][ \t\'\"\+\-\*\/a-zA-Z0-9_]*\]))/is','\1'.$Value.'\3', $replaced);  // javascript arrays ([xxx])
+//                  $replaced = preg_replace('/(.*var[ \t\,a-zA-Z0-9_]+)('.$key.')([ \t]*[\=\;\,])/Uis','\1'.$Value.'\3', $replaced);  // javascript var defines (var XXX;)
+//                  $replaced = preg_replace('/([^0-9a-zA-Z_])('.$key.')([ \t]*[\+\-\*\/\[\;\,\.\)])/is','\1'.$Value.'\3', $replaced);  // javascript arrays (xxx[])    // \= MISSING
+//                  $replaced = preg_replace('/((?:\[|\[[ \t\'\"\+\-\*\/a-zA-Z0-9_]*[^a-zA-Z0-9_]))('.$key.')((?:\]|[^a-zA-Z0-9_][ \t\'\"\+\-\*\/a-zA-Z0-9_]*\]))/is','\1'.$Value.'\3', $replaced);  // javascript arrays ([xxx])
 
-//                  $replaced = preg_replace('/((?:\(|\([^\)]*[ \t\,\+\-\.\*\/\!\<\>\=]))('.$Key.')((?:\)|[ \t\,\+\-\*\/\!\=\<\>][^\)]*\)))/Uis','\1'.$Value.'\3', $replaced);  // javascript function parameters
+//                  $replaced = preg_replace('/((?:\(|\([^\)]*[ \t\,\+\-\.\*\/\!\<\>\=]))('.$key.')((?:\)|[ \t\,\+\-\*\/\!\=\<\>][^\)]*\)))/Uis','\1'.$Value.'\3', $replaced);  // javascript function parameters
                   
                   }
 
@@ -973,43 +623,43 @@ function ReplaceThem($FileName)
                 }
 
                 // replace javascript code in onXXX event handlers
-                if (!in_array($Key, $StdExcJSVarArray))
+                if (!in_array($key, $StdExcJSVarArray))
                 {
                   $tcount = 0;
-                  while($tcount<$_POBSMaxRepeats && preg_match('/(\<[^\?][^\>]*on[0-9a-zA-Z_]+[ \t]*\=[ \t]*[\"\']{0,1}[^\>]*[^a-zA-Z0-9_]+)('.$Key.')([^a-zA-Z0-9_]+)/Ui', $contents))
+                  while($tcount<$_POBSMaxRepeats && preg_match('/(\<[^\?][^\>]*on[0-9a-zA-Z_]+[ \t]*\=[ \t]*[\"\']{0,1}[^\>]*[^a-zA-Z0-9_]+)('.$key.')([^a-zA-Z0-9_]+)/Ui', $contents))
                   {
-                    $contents = preg_replace('/(\<[^\?][^\>]*on[0-9a-zA-Z_]+[ \t]*\=[ \t]*[\"\']{0,1}[^\>]*[^a-zA-Z0-9_]+)('.$Key.')([^a-zA-Z0-9_]+)/Ui','\1'.$Value.'\3', $contents);  // javascript event function parameters
+                    $contents = preg_replace('/(\<[^\?][^\>]*on[0-9a-zA-Z_]+[ \t]*\=[ \t]*[\"\']{0,1}[^\>]*[^a-zA-Z0-9_]+)('.$key.')([^a-zA-Z0-9_]+)/Ui','\1'.$Value.'\3', $contents);  // javascript event function parameters
                     $tcount++;
                   }
 /*
-                  if(preg_match('/(\<[^\?][^\>]*on[0-9a-zA-Z_]+[ \t]*\=[ \t]*[\"\']{0,1}[^\>]*[^a-zA-Z0-9_]+)('.$Key.')([^a-zA-Z0-9_]+)/Ui', $contents, $matches))
+                  if(preg_match('/(\<[^\?][^\>]*on[0-9a-zA-Z_]+[ \t]*\=[ \t]*[\"\']{0,1}[^\>]*[^a-zA-Z0-9_]+)('.$key.')([^a-zA-Z0-9_]+)/Ui', $contents, $matches))
                   {
-                    echo HTMLSpecialChars("<BR> matches=".$matches[1].",".$Key.",".$matches[3].",<BR>");
+                    echo HTMLSpecialChars("<BR> matches=".$matches[1].",".$key.",".$matches[3].",<BR>");
                   }
 */
                 }
                    
-                $contents = preg_replace('/\$(GLOBALS|HTTP_COOKIE_VARS|HTTP_POST_VARS|HTTP_GET_VARS|HTTP_SESSION_VARS|_REQUEST|_FILES|_SERVER|_ENV|_POST|_COOKIE|_GET|_SESSION)([ \t]*)\[(["\' \t]*)'.$Key.'(["\' \t]*)\]/m', '$\1[\3'.$Value.'\4]', $contents ); // var in Tabs
-                $contents = preg_replace('/(setcookie|session_register|session_is_registered|session_unregister)(?:[ \t]*)\(([\\\"\']*)'.$Key.'([\\\"\'\, \t)]*)/i', '\1(\2'.$Value.'\3', $contents ); // cookie or session variables
+                $contents = preg_replace('/\$(GLOBALS|HTTP_COOKIE_VARS|HTTP_POST_VARS|HTTP_GET_VARS|HTTP_SESSION_VARS|_REQUEST|_FILES|_SERVER|_ENV|_POST|_COOKIE|_GET|_SESSION)([ \t]*)\[(["\' \t]*)'.$key.'(["\' \t]*)\]/m', '$\1[\3'.$Value.'\4]', $contents ); // var in Tabs
+                $contents = preg_replace('/(setcookie|session_register|session_is_registered|session_unregister)(?:[ \t]*)\(([\\\"\']*)'.$key.'([\\\"\'\, \t)]*)/i', '\1(\2'.$Value.'\3', $contents ); // cookie or session variables
 
                 if ($ReplaceObjects)
                 {
-                    $contents = preg_replace('/->[ \t]*('.$Key.')(?:!\()/','->'.$Value, $contents); // objects
-                    $contents = preg_replace('/::[ \t]*('.$Key.')(?:![^0-9a-zA-Z_])/','::'.$Value, $contents); // objects
+                    $contents = preg_replace('/->[ \t]*('.$key.')(?:!\()/','->'.$Value, $contents); // objects
+                    $contents = preg_replace('/::[ \t]*('.$key.')(?:![^0-9a-zA-Z_])/','::'.$Value, $contents); // objects
 
                     // special handling for object variables
-                    if( preg_match('/\$([0-9a-zA-Z_]+)[ \t]*->[ \t]*('.$Key.')[ \t]*([^0-9a-zA-Z_])/', $contents, $matches) ) // class variables
+                    if( preg_match('/\$([0-9a-zA-Z_]+)[ \t]*->[ \t]*('.$key.')[ \t]*([^0-9a-zA-Z_])/', $contents, $matches) ) // class variables
                     {
                         // check if variable is not returned from object returning function
                         $tempVar = $matches[1];
                         if(!in_array($tempVar, $ObjectVarArray) )  // XX->YY : replace YY only if XX is not in $ObjectVarArray
-                            $contents = preg_replace('/(\$[0-9a-zA-Z_]+)[ \t]*->[ \t]*('.$Key.')[ \t]*([^0-9a-zA-Z_])/','\1->'.$Value.'\3', $contents); // class variables
+                            $contents = preg_replace('/(\$[0-9a-zA-Z_]+)[ \t]*->[ \t]*('.$key.')[ \t]*([^0-9a-zA-Z_])/','\1->'.$Value.'\3', $contents); // class variables
                     }
 
                 }
 
                if ($ReplaceFieldnames) 
-                  $contents = preg_replace('/([ \t\"\'](?:(?i)name)=[\\\"\' \t]*)'.$Key.'([\\\"\'> \t])/','\1'.$Value.'\2', $contents); // input fields
+                  $contents = preg_replace('/([ \t\"\'](?:(?i)name)=[\\\"\' \t]*)'.$key.'([\\\"\'> \t])/','\1'.$Value.'\2', $contents); // input fields
             }
         }
 
@@ -1018,9 +668,9 @@ function ReplaceThem($FileName)
     // *** REPLACE JavaScript VARIABLENAMES
     if ( $ReplaceJS )
     {
-        foreach( $JSVarArray as $Key => $Value )
+        foreach( $JSVarArray as $key => $Value )
         {
-            if ( strlen($Key) && strpos(strtolower($contents), strtolower($Key)) !== FALSE ) // to speed up things, check if variable name is, in any way, present in the file
+            if ( strlen($key) && strpos(strtolower($contents), strtolower($key)) !== FALSE ) // to speed up things, check if variable name is, in any way, present in the file
             {
               if (in_array($Suffix, $JSFileExtArray))
               { 
@@ -1029,18 +679,18 @@ function ReplaceThem($FileName)
  
                 $replaced = $orig;
                 
-                if ( !in_array($Key, $StdExcJSVarArray) )
+                if ( !in_array($key, $StdExcJSVarArray) )
                 {
                   
-                  $replaced = preg_replace('/(.*?[ \.])('.$Key.')([ \t\.\=\!].*)/is','\1'.$Value.'\3', $orig);  // javascript variables
-                  $replaced = preg_replace('/(\=[ \t]*)('.$Key.')([ \t]*[\;\.])/is','\1'.$Value.'\3', $replaced);  // javascript variables
+                  $replaced = preg_replace('/(.*?[ \.])('.$key.')([ \t\.\=\!].*)/is','\1'.$Value.'\3', $orig);  // javascript variables
+                  $replaced = preg_replace('/(\=[ \t]*)('.$key.')([ \t]*[\;\.])/is','\1'.$Value.'\3', $replaced);  // javascript variables
                   
-                  // $replaced = preg_replace('/(.*var[ \t\,a-zA-Z0-9_]+)('.$Key.')([ \t]*[\=\;\,])/Uis','\1'.$Value.'\3', $replaced);  // javascript var defines (var XXX;)
-                  $replaced = preg_replace('/(.*var(?:[ \t]+|[ \t\,\=a-zA-Z0-9_]+[^a-zA-Z0-9_]))('.$Key.')([ \t]*[\=\;\,])/Uis','\1'.$Value.'\3', $replaced);  // javascript var defines (var XXX;)
-                  $replaced = preg_replace('/([^0-9a-zA-Z_])('.$Key.')([ \t]*[\+\-\*\/\[\;\,\.\\=)])/is','\1'.$Value.'\3', $replaced);  // javascript arrays (xxx[])    // \= MISSING
-                  $replaced = preg_replace('/((?:\[|\[[ \t\'\"\+\-\*\/a-zA-Z0-9_]*[^a-zA-Z0-9_]))('.$Key.')((?:\]|[^a-zA-Z0-9_][ \t\'\"\+\-\*\/a-zA-Z0-9_]*\]))/is','\1'.$Value.'\3', $replaced);  // javascript arrays ([xxx])
+                  // $replaced = preg_replace('/(.*var[ \t\,a-zA-Z0-9_]+)('.$key.')([ \t]*[\=\;\,])/Uis','\1'.$Value.'\3', $replaced);  // javascript var defines (var XXX;)
+                  $replaced = preg_replace('/(.*var(?:[ \t]+|[ \t\,\=a-zA-Z0-9_]+[^a-zA-Z0-9_]))('.$key.')([ \t]*[\=\;\,])/Uis','\1'.$Value.'\3', $replaced);  // javascript var defines (var XXX;)
+                  $replaced = preg_replace('/([^0-9a-zA-Z_])('.$key.')([ \t]*[\+\-\*\/\[\;\,\.\\=)])/is','\1'.$Value.'\3', $replaced);  // javascript arrays (xxx[])    // \= MISSING
+                  $replaced = preg_replace('/((?:\[|\[[ \t\'\"\+\-\*\/a-zA-Z0-9_]*[^a-zA-Z0-9_]))('.$key.')((?:\]|[^a-zA-Z0-9_][ \t\'\"\+\-\*\/a-zA-Z0-9_]*\]))/is','\1'.$Value.'\3', $replaced);  // javascript arrays ([xxx])
                   
-                  $replaced = preg_replace('/((?:\(|\([^\)]*[ \t\,\+\-\.\*\/\!\<\>\=]))('.$Key.')((?:\)|[ \t\,\+\-\*\/\!\=\<\>][^\)]*\)))/Uis','\1'.$Value.'\3', $replaced);  // javascript function parameters
+                  $replaced = preg_replace('/((?:\(|\([^\)]*[ \t\,\+\-\.\*\/\!\<\>\=]))('.$key.')((?:\)|[ \t\,\+\-\*\/\!\=\<\>][^\)]*\)))/Uis','\1'.$Value.'\3', $replaced);  // javascript function parameters
                   
                 }
                 
@@ -1050,12 +700,12 @@ function ReplaceThem($FileName)
                 
                 
                 // replace javascript code in onXXX event handlers
-                if ( !in_array($Key, $StdExcJSVarArray) )
+                if ( !in_array($key, $StdExcJSVarArray) )
                 {
                   $tempcount = 0;
-                  while(preg_match('/(\<[^\?][^\>]*on[0-9a-zA-Z_]+[ \t]*\=[ \t]*[\"\']{0,1}[^\>]*[^a-zA-Z0-9_]+)('.$Key.')([^a-zA-Z0-9_]+)/Ui',$contents) && $tempcount<500)
+                  while(preg_match('/(\<[^\?][^\>]*on[0-9a-zA-Z_]+[ \t]*\=[ \t]*[\"\']{0,1}[^\>]*[^a-zA-Z0-9_]+)('.$key.')([^a-zA-Z0-9_]+)/Ui',$contents) && $tempcount<500)
                   {
-                    $contents = preg_replace('/(\<[^\?][^\>]*on[0-9a-zA-Z_]+[ \t]*\=[ \t]*[\"\']{0,1}[^\>]*[^a-zA-Z0-9_]+)('.$Key.')([^a-zA-Z0-9_]+)/Ui','\1'.$Value.'\3', $contents);  // javascript event function parameters
+                    $contents = preg_replace('/(\<[^\?][^\>]*on[0-9a-zA-Z_]+[ \t]*\=[ \t]*[\"\']{0,1}[^\>]*[^a-zA-Z0-9_]+)('.$key.')([^a-zA-Z0-9_]+)/Ui','\1'.$Value.'\3', $contents);  // javascript event function parameters
                     $tempcount++;
                   }
                 }
@@ -1073,17 +723,17 @@ function ReplaceThem($FileName)
 
                   $replaced = $orig;
 
-                  if ( !in_array($Key, $StdExcJSVarArray) )
+                  if ( !in_array($key, $StdExcJSVarArray) )
                   {
-                      $replaced = preg_replace('/(.*?[ \.])('.$Key.')([ \t\.\=\!].*)/is','\1'.$Value.'\3', $orig);  // javascript variables
-                      $replaced = preg_replace('/(\=[ \t]*)('.$Key.')([ \t]*[\;\.])/is','\1'.$Value.'\3', $replaced);  // javascript variables
+                      $replaced = preg_replace('/(.*?[ \.])('.$key.')([ \t\.\=\!].*)/is','\1'.$Value.'\3', $orig);  // javascript variables
+                      $replaced = preg_replace('/(\=[ \t]*)('.$key.')([ \t]*[\;\.])/is','\1'.$Value.'\3', $replaced);  // javascript variables
 
-//                      $replaced = preg_replace('/(.*var[ \t\,a-zA-Z0-9_]+)('.$Key.')([ \t]*[\=\;\,])/Uis','\1'.$Value.'\3', $replaced);  // javascript var defines (var XXX;)
-                      $replaced = preg_replace('/(.*var(?:[ \t]+|[ \t\,\=a-zA-Z0-9_]+[^a-zA-Z0-9_]))('.$Key.')([ \t]*[\=\;\,])/Uis','\1'.$Value.'\3', $replaced);  // javascript var defines (var XXX;)
-                      $replaced = preg_replace('/([^0-9a-zA-Z_])('.$Key.')([ \t]*[\+\-\*\/\[\;\,\.\\=)])/is','\1'.$Value.'\3', $replaced);  // javascript arrays (xxx[])    // \= MISSING
-                      $replaced = preg_replace('/((?:\[|\[[ \t\'\"\+\-\*\/a-zA-Z0-9_]*[^a-zA-Z0-9_]))('.$Key.')((?:\]|[^a-zA-Z0-9_][ \t\'\"\+\-\*\/a-zA-Z0-9_]*\]))/is','\1'.$Value.'\3', $replaced);  // javascript arrays ([xxx])
+//                      $replaced = preg_replace('/(.*var[ \t\,a-zA-Z0-9_]+)('.$key.')([ \t]*[\=\;\,])/Uis','\1'.$Value.'\3', $replaced);  // javascript var defines (var XXX;)
+                      $replaced = preg_replace('/(.*var(?:[ \t]+|[ \t\,\=a-zA-Z0-9_]+[^a-zA-Z0-9_]))('.$key.')([ \t]*[\=\;\,])/Uis','\1'.$Value.'\3', $replaced);  // javascript var defines (var XXX;)
+                      $replaced = preg_replace('/([^0-9a-zA-Z_])('.$key.')([ \t]*[\+\-\*\/\[\;\,\.\\=)])/is','\1'.$Value.'\3', $replaced);  // javascript arrays (xxx[])    // \= MISSING
+                      $replaced = preg_replace('/((?:\[|\[[ \t\'\"\+\-\*\/a-zA-Z0-9_]*[^a-zA-Z0-9_]))('.$key.')((?:\]|[^a-zA-Z0-9_][ \t\'\"\+\-\*\/a-zA-Z0-9_]*\]))/is','\1'.$Value.'\3', $replaced);  // javascript arrays ([xxx])
 
-                      $replaced = preg_replace('/((?:\(|\([^\)]*[ \t\,\+\-\.\*\/\!\<\>\=]))('.$Key.')((?:\)|[ \t\,\+\-\*\/\!\=\<\>][^\)]*\)))/Uis','\1'.$Value.'\3', $replaced);  // javascript function parameters
+                      $replaced = preg_replace('/((?:\(|\([^\)]*[ \t\,\+\-\.\*\/\!\<\>\=]))('.$key.')((?:\)|[ \t\,\+\-\*\/\!\=\<\>][^\)]*\)))/Uis','\1'.$Value.'\3', $replaced);  // javascript function parameters
 
                   }
 
@@ -1095,12 +745,12 @@ function ReplaceThem($FileName)
                 }
 
                 // replace javascript code in onXXX event handlers
-                if ( !in_array($Key, $StdExcJSVarArray) )
+                if ( !in_array($key, $StdExcJSVarArray) )
                 {
                   $tempcount = 0;
-                  while(preg_match('/(\<[^\?][^\>]*on[0-9a-zA-Z_]+[ \t]*\=[ \t]*[\"\']{0,1}[^\>]*[^a-zA-Z0-9_]+)('.$Key.')([^a-zA-Z0-9_]+)/Ui',$contents) && $tempcount<500)
+                  while(preg_match('/(\<[^\?][^\>]*on[0-9a-zA-Z_]+[ \t]*\=[ \t]*[\"\']{0,1}[^\>]*[^a-zA-Z0-9_]+)('.$key.')([^a-zA-Z0-9_]+)/Ui',$contents) && $tempcount<500)
                   {
-                    $contents = preg_replace('/(\<[^\?][^\>]*on[0-9a-zA-Z_]+[ \t]*\=[ \t]*[\"\']{0,1}[^\>]*[^a-zA-Z0-9_]+)('.$Key.')([^a-zA-Z0-9_]+)/Ui','\1'.$Value.'\3', $contents);  // javascript event function parameters
+                    $contents = preg_replace('/(\<[^\?][^\>]*on[0-9a-zA-Z_]+[ \t]*\=[ \t]*[\"\']{0,1}[^\>]*[^a-zA-Z0-9_]+)('.$key.')([^a-zA-Z0-9_]+)/Ui','\1'.$Value.'\3', $contents);  // javascript event function parameters
                     $tempcount++;
                   }
                 }
@@ -1113,35 +763,35 @@ function ReplaceThem($FileName)
     // *** REPLACE JavaScript FUNCTIONS
     if ( 1 )
     {
-        foreach( $JSFuncArray as $Key => $Value )
+        foreach( $JSFuncArray as $key => $Value )
         {
-            if ( strlen($Key) && strpos(strtolower($contents), strtolower($Key)) !== FALSE ) // to speed up things, check if variable name is, in any way, present in the file
+            if ( strlen($key) && strpos(strtolower($contents), strtolower($key)) !== FALSE ) // to speed up things, check if variable name is, in any way, present in the file
             {
               if (in_array($Suffix, $JSFileExtArray))
               { 
                 // for JS files dont need to search for script tags
                 // process javascript code
-                if ( !in_array($Key, $StdExcJSFuncArray) )
+                if ( !in_array($key, $StdExcJSFuncArray) )
                 {
-                  $contents = preg_replace("/([^a-zA-Z0-9_]+)".$Key."[ \t]*\\(/i","\\1".$Value."(", $contents); //werkt
+                  $contents = preg_replace("/([^a-zA-Z0-9_]+)".$key."[ \t]*\\(/i","\\1".$Value."(", $contents); //werkt
 
                   if ($ReplaceObjects)
-                    $contents = preg_replace('/('.$Key.')::/',$Value.'::', $contents); // objects
+                    $contents = preg_replace('/('.$key.')::/',$Value.'::', $contents); // objects
 
                   if ($ReplaceClasses)
-                    $contents = preg_replace('/([^0-9a-zA-Z_])class[ \t]*('.$Key.')([^0-9a-zA-Z_])/i','\1class '.$Value.'\3', $contents); // class declaration
+                    $contents = preg_replace('/([^0-9a-zA-Z_])class[ \t]*('.$key.')([^0-9a-zA-Z_])/i','\1class '.$Value.'\3', $contents); // class declaration
 
-                  $contents = preg_replace('/([^0-9a-zA-Z_])extends[ \t]*('.$Key.')([^0-9a-zA-Z_])/i','\1extends '.$Value.'\3', $contents); // extended or derived class declaration
-                  $contents = preg_replace('/([^0-9a-zA-Z_])new[ \t]+('.$Key.')([^0-9a-zA-Z_(])/i','\1new '.$Value.'\3', $contents); // extended or derived class declaration
+                  $contents = preg_replace('/([^0-9a-zA-Z_])extends[ \t]*('.$key.')([^0-9a-zA-Z_])/i','\1extends '.$Value.'\3', $contents); // extended or derived class declaration
+                  $contents = preg_replace('/([^0-9a-zA-Z_])new[ \t]+('.$key.')([^0-9a-zA-Z_(])/i','\1new '.$Value.'\3', $contents); // extended or derived class declaration
                 }
                 
                 // replace javascript code in onXXX event handlers
-                if ( !in_array($Key, $StdExcJSFuncArray) )
+                if ( !in_array($key, $StdExcJSFuncArray) )
                 {
                   $tempcount = 0;
-                  while(preg_match('/(\<[^\?][^\>]*on[0-9a-zA-Z_]+[ \t]*\=[ \t]*[\"\']{0,1}[^\>]*[^a-zA-Z0-9_]+)('.$Key.')([^a-zA-Z0-9_]+)/Ui',$contents) && $tempcount<500)
+                  while(preg_match('/(\<[^\?][^\>]*on[0-9a-zA-Z_]+[ \t]*\=[ \t]*[\"\']{0,1}[^\>]*[^a-zA-Z0-9_]+)('.$key.')([^a-zA-Z0-9_]+)/Ui',$contents) && $tempcount<500)
                   {
-                    $contents = preg_replace('/(\<[^\?][^\>]*on[0-9a-zA-Z_]+[ \t]*\=[ \t]*[\"\']{0,1}[^\>]*[^a-zA-Z0-9_]+)('.$Key.')([^a-zA-Z0-9_]+)/Ui','\1'.$Value.'\3', $contents);  // javascript event function parameters
+                    $contents = preg_replace('/(\<[^\?][^\>]*on[0-9a-zA-Z_]+[ \t]*\=[ \t]*[\"\']{0,1}[^\>]*[^a-zA-Z0-9_]+)('.$key.')([^a-zA-Z0-9_]+)/Ui','\1'.$Value.'\3', $contents);  // javascript event function parameters
                     $tempcount++;
                   }
                 }
@@ -1159,29 +809,29 @@ function ReplaceThem($FileName)
 
                   $replaced = $orig;
 
-                  if ( !in_array($Key, $StdExcJSFuncArray) )
+                  if ( !in_array($key, $StdExcJSFuncArray) )
                   {
-                    $contents = preg_replace("/([^a-zA-Z0-9_]+)".$Key."[ \t]*\\(/i","\\1".$Value."(", $contents); //werkt
+                    $contents = preg_replace("/([^a-zA-Z0-9_]+)".$key."[ \t]*\\(/i","\\1".$Value."(", $contents); //werkt
                     
                     if ($ReplaceObjects)
-                      $contents = preg_replace('/('.$Key.')::/',$Value.'::', $contents); // objects
+                      $contents = preg_replace('/('.$key.')::/',$Value.'::', $contents); // objects
                     
                     if ($ReplaceClasses)
-                      $contents = preg_replace('/([^0-9a-zA-Z_])class[ \t]*('.$Key.')([^0-9a-zA-Z_])/i','\1class '.$Value.'\3', $contents); // class declaration
+                      $contents = preg_replace('/([^0-9a-zA-Z_])class[ \t]*('.$key.')([^0-9a-zA-Z_])/i','\1class '.$Value.'\3', $contents); // class declaration
                     
-                    $contents = preg_replace('/([^0-9a-zA-Z_])extends[ \t]*('.$Key.')([^0-9a-zA-Z_])/i','\1extends '.$Value.'\3', $contents); // extended or derived class declaration
-                    $contents = preg_replace('/([^0-9a-zA-Z_])new[ \t]+('.$Key.')([^0-9a-zA-Z_(])/i','\1new '.$Value.'\3', $contents); // extended or derived class declaration
+                    $contents = preg_replace('/([^0-9a-zA-Z_])extends[ \t]*('.$key.')([^0-9a-zA-Z_])/i','\1extends '.$Value.'\3', $contents); // extended or derived class declaration
+                    $contents = preg_replace('/([^0-9a-zA-Z_])new[ \t]+('.$key.')([^0-9a-zA-Z_(])/i','\1new '.$Value.'\3', $contents); // extended or derived class declaration
                     
                   }
                 }
                 
                 // replace javascript code in onXXX event handlers
-                if ( !in_array($Key, $StdExcJSFuncArray) )
+                if ( !in_array($key, $StdExcJSFuncArray) )
                 {
                   $tempcount = 0;
-                  while(preg_match('/(\<[^\?][^\>]*on[0-9a-zA-Z_]+[ \t]*\=[ \t]*[\"\']{0,1}[^\>]*[^a-zA-Z0-9_]+)('.$Key.')([^a-zA-Z0-9_]+)/Ui',$contents) && $tempcount<500)
+                  while(preg_match('/(\<[^\?][^\>]*on[0-9a-zA-Z_]+[ \t]*\=[ \t]*[\"\']{0,1}[^\>]*[^a-zA-Z0-9_]+)('.$key.')([^a-zA-Z0-9_]+)/Ui',$contents) && $tempcount<500)
                   {
-                    $contents = preg_replace('/(\<[^\?][^\>]*on[0-9a-zA-Z_]+[ \t]*\=[ \t]*[\"\']{0,1}[^\>]*[^a-zA-Z0-9_]+)('.$Key.')([^a-zA-Z0-9_]+)/Ui','\1'.$Value.'\3', $contents);  // javascript event function parameters
+                    $contents = preg_replace('/(\<[^\?][^\>]*on[0-9a-zA-Z_]+[ \t]*\=[ \t]*[\"\']{0,1}[^\>]*[^a-zA-Z0-9_]+)('.$key.')([^a-zA-Z0-9_]+)/Ui','\1'.$Value.'\3', $contents);  // javascript event function parameters
                     $tempcount++;
                   }
                 }
@@ -1195,11 +845,11 @@ function ReplaceThem($FileName)
     // *** REPLACE CONSTANTNAMES
     if ( $ReplaceConstants )
     {
-        foreach( $ConstArray as $Key => $Value ) 
+        foreach( $ConstArray as $key => $Value ) 
         {
-            if ( strlen($Key) && strpos(strtolower($contents), strtolower($Key)) !== FALSE ) // to speed up things, check if variable name is, in any way, present in the file
+            if ( strlen($key) && strpos(strtolower($contents), strtolower($key)) !== FALSE ) // to speed up things, check if variable name is, in any way, present in the file
             {
-                $contents = preg_replace('/([^a-zA-Z0-9_\$])('.$Key.')([^a-zA-Z0-9_])/', '\1'.$Value.'\3', $contents );
+                $contents = preg_replace('/([^a-zA-Z0-9_\$])('.$key.')([^a-zA-Z0-9_])/', '\1'.$Value.'\3', $contents );
                 
                 // special handling for arrays like HTTP_SERVER_VARS
                 foreach($StdExcKeyArray as $KeyArray)
@@ -1208,7 +858,7 @@ function ReplaceThem($FileName)
                   if(preg_match('/(\$'.$KeyArray.'\[[ \t]*[\\\'\"]+)'.$Value.'([\\\'\"]+[ \t]*\])/', $contents))
                   {
                     // restore previous value of the key
-                    $contents = preg_replace('/(\$'.$KeyArray.'\[[ \t]*[\\\'\"]+)'.$Value.'([\\\'\"]+[ \t]*\])/', '\1'.$Key.'\2', $contents );
+                    $contents = preg_replace('/(\$'.$KeyArray.'\[[ \t]*[\\\'\"]+)'.$Value.'([\\\'\"]+[ \t]*\])/', '\1'.$key.'\2', $contents );
                   }
                 }
             }
@@ -1273,10 +923,10 @@ function DisplayArray($ArrayName, $HeaderText="", $BgColor="FFF0D0")
     
         $Cnt = 0;
         $Line = 0;
-        foreach( $ArrayName as $Key => $Value )
+        foreach( $ArrayName as $key => $Value )
         {   
             $Cnt++;
-            echo '<TD WIDTH="'.$width.'%" BGCOLOR="#'.$BgColor.'"><b>'.$Key.'</b><br>'.$Value.'</TD>';
+            echo '<TD WIDTH="'.$width.'%" BGCOLOR="#'.$BgColor.'"><b>'.$key.'</b><br>'.$Value.'</TD>';
             if ( ( $Cnt % $TableColumns) == 0  && ( $Cnt != $sizeOf ) )
             {
                 echo '</TR>';
@@ -1293,17 +943,8 @@ function DisplayArray($ArrayName, $HeaderText="", $BgColor="FFF0D0")
         else echo '<i>No match or no replace requested</i><br>';
 }
 
-function CheckSafeMode() {
-
-    global $TimeOut;
-
-    $SafeMode = strtolower(get_cfg_var("safe_mode"));
-    if (!$SafeMode) set_time_limit($TimeOut);
-        else echo "<b><FONT COLOR=orange>Warning: SafeMode is on. Can not set timeout.</b></FONT><br>"; 
-
-}
 
 ?>
 
-</BODY>
-</HTML>
+</body>
+</html>
