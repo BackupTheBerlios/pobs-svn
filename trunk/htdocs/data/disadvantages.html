@@ -1,0 +1,55 @@
+<h1>Disadvantages</h1>
+
+<p>POBS is not for people who want a quick fix. I you seriously want to
+obfuscate your code and are prepared to a few hours work in it, POBS is a
+serious option. I don't want to scare you off, but don't want to promise you
+a rosegarden either.</p>
+
+<h2>Your probably have to adjust some codelines to get it working</h2>
+
+<p>The downside of POBS is that it won't guarantee that your code will work
+properly without adjustments. This has to do with the way scripting languages
+like PHP deal with variables. As you probably know you can dynamically define
+(maybe "use" is a better word) variables in PHP.  This poses a problem for
+POBS or any other Obfuscator.  But you can deal with it by scanning your code
+for things like $$VarName and parse_str and edit your code or add variables
+to the array of excluded variables ($UdExcVarArray).</p>
+
+<p>I must say though that many of the coding adjustments that I suggest are
+actually good (and normal) coding practices. Like starting every constant
+with a lower "c" and putting the rest in uppercase. Or naming all variables
+of a certain kind according to a naming convention.</p>
+
+<p>Since I don't make any money out of POBS (I only improve it for you guys,
+which makes me feel like the son of Mother Theresa) I hate to see
+disappointed faces. So don't think you don't have to put effort in getting
+your code to work. If you want POBS to replace the variables (besides
+functions and constants) in your application, you might need to spend a few
+hours adjusting your code.  Replacing functionnames and constants probably
+won't give you any trouble (providing you don't define constants like "HREF",
+"ALIGN" and "SRC").</p>
+
+<p>See</a> <a href="codingtips.html">Codingtips</a> and <a
+href="tips.html">Debugtips</a> on how to prevent problems and get your code
+working (I got my 300 Kb code working without my own advice so there is no
+need to get discouraged).</p>
+
+<h2>No password protection</h2>
+
+<p>POBS will not protect against the proliferation of passwords used in your
+sourcecode. I.e. if your PHP program connects to a MySQL database you
+probably use the PHP function "mysql_connect". One of the parameters is a
+password. POBS doesn't obfuscate the function (since it is not user -defined)
+nor the password. You might make a deliberate complex function that generates
+a password but a hacker could just call that function and see what it
+returns.</p>
+
+<p>For me, protecting against database passwords or stuff is not really
+important because POBS is essentially targeted at applications that need to
+be deployed. I.e.  on a customers computer. In that situation a customer
+might have full access to the computer and deals with his own data in the
+database anyway.</p>
+
+<p>Zend Encoder and Microcode Encoder do protect passwords since they encrypt
+those too (they probably encrypt the whole PHP file like "WinZip + password"
+would do).</p>

@@ -1,0 +1,144 @@
+body { 
+
+  font: small Gerogia, Verdana, sans-serif;
+  color: #000;
+  background: #fff url("../img/bg.gif") no-repeat top left;
+  line-height: 180%;
+  
+}
+
+a, a:link { 
+
+  color: #0D4CAC;
+  text-decoration: none;
+
+}
+
+a:active { 
+
+  color: #0069b3;
+
+}
+
+a:visited { 
+
+  color: #0D4CAC;
+
+}
+
+a:hover {
+
+  color: #0D4CAC;
+  border-bottom: 1px blue solid;
+
+}
+
+.copyright { 
+
+  text-align: center;
+
+}
+
+img {
+
+  border: 0;
+
+}
+
+img.news {
+
+  width: 62px;
+  height: 85px;
+  float: left;
+  
+}
+
+
+a.screenshot:hover { 
+
+  border: 0;
+
+}
+
+a.screenshot img { 
+
+  width: 140px;
+  height: 162px;
+  padding: 20px 0;
+
+}
+
+div.release { 
+
+
+}
+
+div.release h2 {
+
+
+}
+
+br { 
+
+  clear: all;
+
+}
+
+div.poll { 
+
+  border: 1px #000 solid;
+  padding: 0 0 2px 8px;
+
+}
+
+div.menubar { 
+
+  background: #8dcff4 url("../img/menu_bg.gif") repeat-y;
+  position: absolute;
+  left: 0;
+  width: 120px;
+  padding: 20px 30px 300px 20px;
+  font-weight: bold;
+
+}
+
+div.menubar a:hover { 
+
+  border: 0;
+
+}
+
+div.mainbar { 
+
+  border: 1px #dedede solid;
+  border-width: 0 1px 1px 0;
+  text-align: justify;
+  margin: 80pt 0 0 130pt;
+  padding: 0 25px 15px 0;
+
+}
+
+div.leftbar { 
+
+  width: 70%;
+  border: 1px #dedede solid;
+  border-width: 0 1px 0 0;
+  padding: 0 25px 15px 0;
+
+}
+
+div.sidebar {
+
+  float: right;
+  width: 25%;
+  padding-top: 30px;
+  text-align: left;
+
+}
+
+hr { 
+
+  border: 1px #dedede solid;
+  height: 1px;
+
+}

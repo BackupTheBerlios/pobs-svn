@@ -1,0 +1,145 @@
+<div class="sidebar">
+
+  <form method="post" action="foobar.php">
+  
+    <input type="text" name="keyword" size="10" maxlength="20" />&nbsp;
+    <input type="submit" name="search" value="&nbsp;Search&nbsp;" />
+  
+  </form>
+    
+  <br/><br/>
+
+  <p><a class="screenshot" href="img/screenshot1.png"><img src="img/screenshot1_t.png" alt="Screenshot!" /></a>
+  <br />POBS 0.91 Startscreen in K-Meleon browser</p><br/><br/>
+  
+  <div class="poll">
+  
+    <h4>Quick poll</h4>
+  
+    <form action="poll.php" method="post">
+  
+      POBS is<br />
+    
+      <input type="radio" name="choice" value="1" />Great<br />
+      <input type="radio" name="choice" value="2" />Useful<br />
+      <input type="radio" name="choice" value="3" />Too much trouble<br />
+      <input type="radio" name="choice" value="4" />Needs more refinement<br />
+    
+      <p><input type="submit" value="Vote" /> &mdash; <a href="poll.php?view=results">View Results</a></p>
+    
+    </form>
+
+  </div>
+
+  <br /><hr />
+
+</div>
+
+<div class="leftbar">
+
+  <h1>Home</h1>
+  
+  <div class="release">
+  
+    <h2>August 10th 2003 - Version 0.99</h2>
+    <p>A new version of POBS has been rolled out of the POBS factory. <a
+    href="download.html">Download here</a>.</p>
+    
+    <p>The following enhancements have been included:</p>
+    
+    <ul>
+    
+      <li>dividing obfuscation of PHP and JavaScript scripts</li>
+      <li>added variable $LineExclude (into INI file), POBS will not obfuscate any line</li>
+      <li>that contain string specified there. Look to ini file for more details</li>
+      <li>improved concatenation of lines</li>
+      <li>added possibility to insert copyright message (or any text) on the top of
+          processed scripts</li>
+      <li>some bugs fixed:
+    
+        <ul>
+  	<li>&lt;? // something(); ?&gt;</li>
+  	<li>problem with obfuscating of class name from &lt;anze@volja.net&gt;</li>
+  	<li>some other small bugs</li>
+        </ul>
+  
+      </li>
+  
+    </ul>
+  
+  </div>
+  
+  <div class="release">
+    <h2>May 12th 2003 - Version 0.981</h2>
+    <p>Bugfixes on 0.98 <a href="download.html">Download here</a></p>
+  </div>
+  
+  <div class="release">
+  
+    <h2>March 13th 2003 - Version 0.98</h2>
+    <p>Again, Mark from Slovakia is responsible for the new version of POBS. With
+    Javascript improvements and bugfixes. <a href="download.html">Check the
+    download page</a>.</p>
+    
+  </div>
+  
+  <div class="release">
+  
+    <h2>December 26th 2002 - Version 0.97 is out!</h2>
+    <p><img class="news" src="img/news.gif" alt="News!"/>
+    We are glad to bring you version 0.97 of POBS. Again, Mark from Slovakia
+    is mainly responsible for this new release of POBS. Bugfixes and now also
+    files without file-extension can be processed. <a
+    href="download.html">Download it here!</a></p>
+    
+  </div>
+  
+  
+  <br/>
+
+  <h2>Documentation</h2>
+  
+  <p>The documentation is in the form of this website. It's a bit outdated but
+  I hope to offer a updated version soon. You can download it here. <a
+  href="myfiles/pobsdoc-nov8-2001.zip">pobsdoc-nov8-2001.zip</a></p>
+    
+  
+  <h2>Hand over the code and still sleep well</h2>
+  
+  <p>POBS stands for PHP Obfuscater. It is a free and open PHP program
+  that makes PHP sourcecode almost impossible to read and edit for normal
+  humans. It is a simple way to protect your PHP sourcecode from people who
+  would like to adjust it or who would like to know its workings. Now you can
+  deploy your application and feel pretty safe about it.</p>
+  
+  <h2>How does it work?</h2>
+  
+  <p>POBS works by replacing User-defined function names, variables and
+  constants with a MD5 key of 8 characters. POBS writes new "encrypted"
+  source code files and doesn't need a describer. It really removes information
+  that humans would like to have but computers don't care about. It's not ideal
+  but quite a good option in my idea.</p>
+  
+  
+  <h2>Advantages</h2>
+  
+    <ul>
+  
+      <li>No libraries or decoders needed for deployment</li>
+      <li>Irreversible encoding</li>
+      <li>Hard to reverse-engineer (for humans and/or machines)</li>
+      <li>Cross-platform, cross PHP version</li>
+      <li>Open Source, so it can be adjusted to your own needs</li>
+      <li>Works seamlessly with PHP cachers like APC and ZEND Cache</li>
+      <li>Works with Zend Encoder (although you probably don't need it anymore)</li>
+  
+    </ul>
+  
+  
+  <h2>Share your experiences and thoughts</h2>
+  
+  <p>In order to make POBS more user-friendly, secure and feature-rich, you are
+  invited to share your experiences with us. You can use the guestbook or
+  email.</p>
+
+</div>

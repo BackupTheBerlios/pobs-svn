@@ -1,0 +1,56 @@
+<h1>Debug Tips</h1>
+
+The downside of POBS is that it won't
+guarantee that your code will work properly. Another is
+that you might have to adjust your code to get it working.
+I must say though that many of the coding adjustments that
+I suggest are actually good (and normal) coding
+practices.</p>
+
+<p> The good thing is that I can tell you where you have to adjust your
+code.</p>
+
+<p> In my case I had almost 300 Kb of PHP code before I started designing
+POBS. It took me a while to adjust my code to get it working properly after
+being processed by POBS. If your program doesn't work properly after been
+POBSed, here is some debugging advice.</p>
+
+<h2>Debugging</h2>
+
+<p>After using POBS you might want to check whether your program still works
+properly. If it doesn't you need to debug.</p>
+
+<p> In the PHP - includefile named "pobs-ini.inc" you can indicate if you
+like POBS to concatenate lines and to remove indents. If you set them to
+FALSE you will be able to more easily read the obfuscated code and see where
+things have gone wrong.</p>
+
+<code><span style="color: #000000"> <span style="color:
+#0000BB">$V31bff649</span><span style="color: #007700">=</span><span
+style="color: #DD0000">"Var2"</span><span style="color: #007700">;<br
+/>$$</span><span style="color: #0000BB">31bff649</span><span style="color:
+#007700">=</span><span style="color: #DD0000">"Amsterdam"</span><span
+style="color: #007700">;<br />echo </span><span style="color:
+#0000BB">$V8c4e34d5</span><span style="color: #007700">; </span><span
+style="color: #FF8000">// empty<br /></span></span> </code
+
+<p>In order to debug you want to know if the problem lies with the
+replacement of variables, functions or constants. Normally, variables give
+the most problems since a scripting language like PHP allows you to declare
+them very dynamically (think for instance of $$Var or the PHP function <a
+href="http://www.php.net/parse_str">parse_str</a>). So you want to continue
+more modestly and turn the replacement of variables, constants and functions
+on and off. That way it's easier to conclude where your code causes
+problems.</p>
+
+<code><span style="color: #000000">
+<span style="color: #0000BB">$ReplaceFunctions
+</span><span style="color: #007700">= </span><span style="color:
+#0000BB">TRUE</span><span style="color: #007700">;<br /></span><span
+style="color: #0000BB">$ReplaceConstants </span><span style="color:
+#007700">= </span><span style="color: #0000BB">FALSE</span><span
+style="color: #007700">;<br /></span><span style="color:
+#0000BB">$ReplaceVariables </span><span style="color: #007700">= </span><span
+style="color: #0000BB">FALSE</span><span style="color: #007700">;<br /></span>
+</span>
+</code>

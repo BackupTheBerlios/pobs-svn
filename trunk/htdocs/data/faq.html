@@ -1,0 +1,310 @@
+<h1>FAQ</h1>
+
+<ul>
+  
+  <li><a href="#par160">Do you use POBS yourself?</a></li>
+  <li><a href="#par74">Why wouldn't I use Zend Encoderinstead?</a></li>
+  <li><a href="#par122">Why would I favor Zend Encoder over POBS?</a></li>
+  <li><a href="#par163">How much work would it be to adjust my code?</a></li>
+  <li><a href="#par55">What does obfuscate mean?</a></li>
+  <li><a href="#par64">With what has POBS been tested?</a></li>
+  <li><a href="#par65">What about $$Var?</a></li>
+  <li><a href="#par72">Will execution of the scripts be slower?</a></li>
+  <li><a href="#par73">Will it increase the size of the PHP script files?</a></li>
+  <li><a href="#par78">Can I process selected files of my application?</a></li>
+  <li><a href="#par87">How long does it all take?</a></li>
+  <li><a href="#par92">Doesn't APC provide enough security?</a></li>
+  <li><a href="#par97">Shouldn't all software be free and open?</a></li>
+  <li><a href="#par104">Can I obfuscate part of my PHP application?</a></li>
+  <li><a href="#par108">Are there any other PHP Obfuscators?</a></li>
+  <li><a href="#par133">Do I need a decoder?</a></li>
+  <li><a href="#par149">Do you offer a money-back guarantee?</a></li>
+  <li><a href="#par162">Can I exclude too many variables, functions or constants?</a></li>
+  <li><a href="#par178">But why obfuscate, since PHP code is never seen by the person at the end of the browser?</a></li>
+  
+</ul>
+
+<a name="par160" id="par160"></a><h3>Do you use POBS yourself?</h3>
+
+<p>Yes I do. I have about 300 Kb of PHP code. After adjusting the software for
+POBS, I now know what POBS likes and doesn't like and every update of the
+software can be POBSed without a hitch.</p>
+
+<a name="par74" id="par74"></a><h3>Why wouldn't I use Zend Encoder instead?</h3>
+
+<p><em>Price</em><br /> I can tell you about my own considerations. I
+seriously considered Zend Encoder and downloaded it together with the manuals
+since I thought they where the only option for deploying your application
+safely. I found the price quite high but that alone it didn't deter me.
+Also, installation didn't seem easy to me.</p>
+
+<p><em>Works with other programs</em><br /> On top of that I already used APC
+as a cacher. And as far as I know APC and Zend Encoder don't operate in
+concert. So I would have to install Zend Cache too.  (And Zend
+Optimizer). Obviously, if you already use APC, Zend Encoder or Zend Cache,
+you can continue doing so with POBS.</p>
+
+<p><em>Can not be reverse-engineered by a computer</em><br /> Another
+consideration is that Zend Encoder doesn't remove information. As far as I
+understand (correct me if I'm wrong) you can adjust the PHP Engine (not for
+the everyday coder maybe) and restore the complete sourcecode even if you use
+an Encoder and/or a Cacher.  The kind of encoding Zend Encoder does is
+reversible.  The encoding POBS does is not reversible since the meaning is
+thrown away. The meaning of the code is only know after spending a lot of
+time studying it. One would have to give every variable, constant and
+function a meaningful name which can only be done after finding out the
+working of every function.</p>
+
+<p><em>Deployment at ISP without trouble</em><br /> If you want to deploy a
+PHP application at an ISP and you want to protect your sourcecode for
+whatever reason , normally you can't ask them to install something like Zend
+Encoder for you. In that case, POBS can do the job and you can sleep
+tight.</p>
+
+<a name="par122" id="par122"></a><h3>Why would I favor Zend Encoder over POBS?</h3>
+
+<p>Since I try to be objective and do not claim that POBS is the greatest
+invention since sliced bread, I guess there certainly are advantages to an
+encoder like Zend Encoder or Microcode (see the </a> <a href=
+"links.html">Links</a> page).</p>
+
+<p>If the machine, and not just a directory, that runs your program is
+controlled by you, you can install an encoder. The advantage of an encoder is
+that it obfuscates everything. It may be compared to zipping your PHP files
+with a password on top of it.</p>
+
+<p>POBS obfuscates user-defined variables, functions and constants. Not
+standard PHP functions, variables or constants. Also, POBS does not obfuscate
+database passwords or encryption methods that are used inside your PHP
+program. And it doesn't obfuscate standard text.</p>
+
+<p>Also, Zend or Microcode do not require your code to be adjusted. And you
+know it will work as intended.</p>
+
+<a name="par163" id="par163"></a><h3>How much work would it be to adjust my code?</h3>
+
+<p>Difficult question. The last thing I want is to disappoint you and have
+you put a lot of work in it without proper results. It all depends on:</p>
+
+<p><em>The size of your application</em><br /> Obviously, the larger your
+application, the more work you have to put in it.</p>
+
+<p><em>The way you program</em><br /> I myself made the mistake of naming
+constants after HTML tags. Also, I didn't start them with a lowercase "c" or
+something to set them apart from tags or other stuff. Replacement was
+relatively easy since you can easily scan your code for "define".</p>
+
+<p>Another thing is that you might declare a lot of variable variables in
+your code with "parse_str" or $$Var. These give POBS troubles and you have to
+put in more work if you use a lot of it.</p>
+
+<p><em>The level of security you want</em><br /> With a scripting language
+like PHP, variables pose the greatest threat. Variables can be declared on
+runtime so you never know which ones will be there.  If you only replace
+functionnames and constantnames you have a lower level of obfuscation but you
+need to make far fewer adjustments. Anyway, I would advise anyone to start
+off and replace only functionnames and constants and see if you code
+works. If it does, proceed and replace variablenames also.</p>
+
+<a name="par55" id="par55"></a><h3>What does obfuscate mean?</h3>
+
+<p>Good question. I had never heard of it before talking to people about my
+program to obscure PHP code. I always talked of obscuring and couldn't find
+similar programs (which do not exist anyway) until someone told me it goes
+under the name of "obfuscater".</p>
+
+<p>This is what Merriam Webster dictionary has to
+say about it:</p>
+
+<p>
+Main Entry: ob&#183;fus&#183;cate<br />
+Pronunciation: '&#228;b-f&amp;-"skAt;
+&#228;b-'f&amp;s-"kAt, &amp;b-<br />
+Function: transitive verb<br />
+Inflected Form(s): -cat&#183;ed;
+-cat&#183;ing<br />
+Etymology: Late Latin obfuscatus, past participle
+of obfuscare, from<br />
+Latin ob- in the way + fuscus dark brown -- more
+at OB-, DUSK<br />
+Date: 1577<br />
+1 a : DARKEN b : to make obscure<br />
+2 : CONFUSE<br />
+</p>
+
+<a name="par64" id="par64"></a><h3>With what has POBS been tested?</h3>
+
+<p>POBS has only been tested with PHP 4.0.4 on Linux and Win32. It will
+probably work on other PHP versions as well since I can't imagine why it
+wouldn't work. But this is certainly not a guarantee.</p>
+
+<a name="par65" id="par65"></a><p>What about $$Var?</h3>
+
+<p>Variable variables pose a problem for POBS.  But they can easily be
+overcome.</p>
+
+<p>Consider the following code snippet:</p>
+
+<code><span style="color: #000000">
+<span style="color: #0000BB">&lt;?php<br /><br />$Var1</span><span
+style="color: #007700"> = </span><span style="color:
+#DD0000">"Var2"</span><span style="color: #007700">;<br />$</span><span
+style="color: #0000BB">$Var1</span><span style="color: #007700"> = </span><span
+style="color: #DD0000">"Amsterdam"</span><span style="color: #007700">;<br
+/>echo </span><span style="color: #0000BB">$Var2</span><span style="color:
+#007700">; </span><span style="color: #FF8000">// "Amsterdam"<br /><br
+/></span><span style="color: #0000BB">?&gt;<br /></span>
+</span>
+</code
+
+<p>$Var2 will have the value "Amsterdam"</p>
+
+<p>POBS makes the following code of it:<br /><br />
+
+<code><span style="color: #000000">
+<span style="color: #0000BB">&lt;?php<br /><br />$V31bff649</span><span
+style="color: #007700"> = </span><span style="color:
+#DD0000">"Var2"</span><span style="color: #007700">;<br />$$</span><span
+style="color: #0000BB">31bff649</span><span style="color:
+#007700"> = </span><span style="color: #DD0000">"Amsterdam"</span><span
+style="color: #007700">;<br />echo </span><span style="color:
+#0000BB">$V8c4e34d5</span><span style="color: #007700">; </span><span
+style="color: #FF8000">// empty<br /><br /></span><span style="color:
+#0000BB">?&gt;<br /></span>
+</span>
+</code
+
+<p>As you see POBS has replaced all occurences of $Var2 but not
+Var2. Therefore this little program will not work as intended. To get it
+working you need to add Var2 to the $UdExcVarArray in pobs-ini.inc.</p>
+
+
+<a name="par72" id="par72"></a><h3>Will execution of the scripts be slower?</h3>
+
+<p>Probably not. I haven't noticed nor measured. According to one user
+execution time was 9% faster after obfuscating. Also, the sourcefiles were
+about 10% smaller in size.</p>
+
+
+<a name="par73" id="par73"></a><h3>Will it increase the size of the PHP
+script files?</h3>
+
+<p>That depends. But generally not. (Au contraire). If you remove comments
+and indents and have the lines concatenated your files will, on average lose
+about 10% of their size. If you only have the variables, constants and
+functions replaced it will probably result in a slight increase in filesize
+since the average length of variables and functionames is slightly smaller
+than 9 (First letter + MD5 of 8 characters).</p>
+
+
+<a name="par78" id="par78"></a><h3>Can I process selected files of my application?</h3>
+
+<p>Yes, you can! From version 0.91 on, POBS automatically checks if the sourcefile is newer than the
+targetfilet. It then only rewrites the new ones.</p>
+
+<p>But remember, although POBS can replace selectively, POBS <em>needs to
+scan all the files of your application</em> . It must, to be sure it knows all the
+userdefined functions, variables and constants in your application.</p>
+
+
+<a name="par87" id="par87"></a><h3>How long does it all take?</h3>
+
+<p>Depending on the total size of your sourcefiles and the number of
+functions, constants and variables used it might take POBS quite a long time
+to process them. This has also to do with the incomplete functions that PHP
+offers and is a major disadvantage to PHP in my opinion. In my case,
+processing 250 Kb of source in about 40 files takes about 600 seconds on a
+300 Mhz machine. If you have suggestions as to how it can be made speedier
+please let me know.</p>
+
+<p>If you made adjustments to the code in certain files, you can instruct
+POBS to just replace those files to speed up processing.</p>
+
+<p>Standard timeout for PHP is 30 seconds or something. This is probably not
+enough. In the pobs-ini.inc file you can adjust the timeout. POBS will set it
+when it is started up. It is necessary though that PHP does not run in "Safe
+mode".  In php.ini you can set "Safe mode" off.</p>
+
+
+<a name="par92" id="par92"></a><h3>Doesn't APC provide enough security?</h3>
+
+<p>Depending on the security you need, it very well might do so. APC provides
+a mode (mmap) in which only "compiled" PHP files are stored on the
+server. These are pretty hard to read and might discourage many hackers from
+trying to decode them. But it's quite possible to reverse the compiling
+process by way of another program (that you need to write yourself
+probably). So, if you need to deploy an application and want to feel really
+safe and secure, I don't think a cacher like APC is the way to go. But of
+course, APC was never intended for such purposes.</p>
+
+<ul>
+  <li>APC does not encrypt or throw away information. Machine reversible.</li>
+  <li>Zend Encoder does encrypt but doesn't throw away information. Machine reversible.</li>
+  <li>POBS encrypts by way of throwing away information. Never completely
+  reversible. Only partly reversible by intensely studying the code.</li>
+</ul>
+
+
+<a name="par97" id="par97"></a><h3>Shouldn't all software be free and open?</h3>
+
+<p>For me that's like saying: "Shouldn't everyone on earth be peaceful,
+loving and working together". I rather work with reality than project my
+ideals on it.</p>
+
+<p>If everyone works for free I will do likewise. But that isn't the case
+yet. Contrary to Richard Stallman I don't think all software should be free
+and open.  Open and closed software both have their advantages and
+disadvantages. The one who writes software (or the owner) should decide what
+he wants to share. In my opinion the same goes for money and property, which
+is called Capitalism or libertarianism.</p>
+
+
+
+<a name="par104" id="par104"></a><h3>Can I obfuscatepart of my PHP application?</h3>
+
+<p>No. For obvious reasons.</p>
+
+<p>Many PHP applications consist of many separate files that can be included
+at will. If you replace a functionname in file A you have to replace all
+occurences of that function in every other PHP program.</p>
+
+<p><em>But</em>, POBS allows you to select the files you want to obfuscate to
+make processing faster. If you POBSed everything already but made adjustments
+to just a few files you can instruct POBS to replace just these.</p>
+
+
+<a name="par108" id="par108"></a><h3>Are there any other PHP Obfuscators?</h3>
+
+<p>I would wish there were many, so I wouldn't have to write my own. But
+there's only one at <a href= "http://www.hotscripts.com/Detailed/10841.html"
+target="_new">http://www.hotscripts.com/Detailed/10841.html</a> which is
+rather limited and not very secure. It deals with variables only. I
+downloaded the source and concluded it didn't suit my needs. Too bad.</p>
+
+
+<a name="par133" id="par133"></a><h3>Do I need a decoder?</h3>
+
+<p>No, luckily it doesn't.  POBS doesn't work that way.  What it does is
+irreversible.</p>
+
+
+<a name="par149" id="par149"></a><h3>Do you offer a money-back guarantee?</h3>
+
+<p>Of course! If, for any reason, POBS does not live up to your expectations,
+you can send it back and receive every penny you paid for it.</p>
+
+
+<a name="par162" id="par162"></a><h3>Can I exclude too many variables,
+functions or constants?</h3>
+
+<p>No, not really. Only too few. But, of course, the more you exclude the
+less obfuscated it becomes.</p>
+
+
+<a name="par178" id="par178"></a><h3>But why obfuscate, since PHP code is
+never seen by the person at the end of the browser?</h3>
+
+<p>Hard to understand why people don't understand the uses of something like
+POBS. POBS can be specifically helpful when you need to deploy your
+application at an ISP or customer. Also, even if an hacker breaks in to your
+own machine he couldn't do much with your code.</p>

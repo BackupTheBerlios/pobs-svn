@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+<TITLE>Download</TITLE>
+<!-- Generated with the Walhalla Content Management System -->
+<LINK REL=stylesheet HREF='/style.css' TYPE='text/css'>
+<SCRIPT LANGUAGE="Javascript">
+ if (window==top) {
+ self.location.replace ( '/index.html?download.htm');
+ } else {
+}
+</SCRIPT>
+</HEAD>
+
+<BODY CLASS=bodypage  TOPMARGIN=10 LEFTMARGIN=10 MARGINHEIGHT=10 MARGINWIDTH=10>
+
+<SCRIPT LANGUAGE='JAVASCRIPT'>
+var maintenance
+function JsReactie(Url) {
+ maintenance=window.open(Url,'maintenance','width=600,height=500,scrollbars=yes,resizable=yes,status=yes,xxxdependent=yes')
+ maintenance.focus()
+}
+</SCRIPT>
+<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH=100%>
+<TR>
+<TD VALIGN=TOP>
+<H1>Download</H1><DIV CLASS=normaal><A NAME=par59></A>
+<b>Warning</b><br>POBS is not for people who want a quick fix. If you seriously want to obfuscate your code and are prepared to a few hours work in it, POBS is a serious option. I don't want to scare you off, but don't want to promise you a rosegarden either. <br />
+<br />
+The files are a mere 25Kb in size. If you would ask MicroSoft, this requires distribution via CD Rom. And an install-program of course. Luckily, POBS requires neither one of them.<br />
+<br><DIV CLASS=normaal><A NAME=par277></A>
+<b>Version 0.99 - August 10th 2003</b><br><TABLE BORDER=1 WIDTH=160 CELLPADDING=4 CELLSPACING=1 ALIGN=RIGHT><TR><TD>Hello!<br />
+<br />
+Sorry about my english. I've modified the actual Version 0.99. Now the software based on Language-Files. So everybody can change the software in their own language and change this with us. At the download (view Link on the bottom) are a german and the original english-languagefile available.<br />
+<br />
+I've mailed the "new" package to the developer...<br />
+<br />
+Homepage: http://www.phpwebworks.de/ 	<br />
+<A HREF=http://phpwebworks.de/hitlink.php?id=18 TARGET=_blank>Download v0.99 (international)</A><br />
+<br />
+<br />
+<br />
+Reddi</TD></TR></TABLE><br />
+<A HREF=/myfiles/downloads/pobs099.zip>pobs099.zip</A>. <br />
+- dividing obfuscation of PHP and JavaScript scripts<br />
+- added variable $LineExclude (into INI file), POBS will not obfuscate any line <br />
+  that contain string specified there. Look to ini file for more description<br />
+- improved concatenation of lines<br />
+- added possibility to insert copyright message (or any text) on the top of processed<br />
+  scripts<br />
+- some bugs fixed:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- &lt;? // something(); ?&gt;<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- problem with obfuscating of class name from <anze@volja.net><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- some other small bugs<br />
+<br />
+<b>Version 0.981 - May 12th 2003</b><br />
+<A HREF=/myfiles/downloads/pobs0981.zip>pobs0981.zip</A>. Better Javascript handling and some bugfixes.<br />
+<br><DIV CLASS=normaal><A NAME=par267></A>
+<b>Version 0.97 - December 26th 2002</b><br><A HREF=/myfiles/downloads/pobs097.zip>pobs097.zip</A><br />
+<br />
+-corrected javascript replacements if the tage is different from simple &lt;SCRIPT&gt; (for example  &lt;SCRIPT language="JavaScript"&gt;)<br />
+-added possibility to process also files without extension - such files will be specified by dot (".") in $FileExtArray variable<br />
+-corrected problem with removing newlines and //, or # comments - the side effect is also that the specification of number of preserved comments now applies also to // and # comments, not only to /**/ comments<br />
+<br><DIV CLASS=normaal><A NAME=par244></A>
+<b>Version 0.96 - August 27th 2002</b><br><A HREF=/myfiles/downloads/pobs096.zip>pobs096.zip</A><br />
+<ul><br />
+<li>added $UdExcFileArray and $UdExcDirArray to allow specification of files and directories that will be excluded from obfuscation. There is a difference in behaviour between those two arrays.  Any file name that will match entry in $UdExcFileARray will be not scanned and obfuscated, but will be copied to the target directory. Any directory that will match entry in $UdExcDirArray will be passed without obfuscation and WILL BE NOT copied into target directory<br />
+<li>improved comments removal handling. It is possible to specify how many <br />
+first comments will be not removed (idea is to preserve copyright comments). This applies only to /* ... */ comments, other comments are always removed, because they cause problems where returns removal is enabled.<br />
+<li>corrected bug that caused 'Empty delimiter' warning<br />
+<li>not showing that creation of directory failed if directory already exists<br />
+<li>corrected bugs on functions and variables replacement, when pobs replaced only part of the variable/function<br />
+<li>added swith for replacing classes<br />
+</ul><br><DIV CLASS=normaal><A NAME=par232></A>
+<b>Version 0.95.1 - July 29th 2002</b><br><A HREF=/myfiles/downloads/pobs0951.zip>pobs0951.zip</A><br />
+<br />
+- fixed one of the problems with replacing of newlines, PHPNuke now works<br />
+- fixed problem with replacing keys in arrays such as HTTP_SERVER_VARS <br />
+- fixed problem with unselecting the checkbox for functions, constants and <br />
+variables (unselecting had no effect before)<br />
+<br><DIV CLASS=normaal><A NAME=par150></A>
+<b>Documentation</b><br> <A HREF='/myfiles/pobsdoc-nov8-2001.zip'>pobsdoc-nov8-2001.zip</A> Documentation is in the form of this website. Unzip the file and drag the "index.html" to a browser. That should do it.<br>
+<br>
+<DIV CLASS=normaal><A NAME=par221></A>
+<b>Version 0.95 - July 12th 2002</b><br><A HREF=/myfiles/downloads/pobs095.zip>pobs095.zip</A><br />
+<br><DIV CLASS=normaal><A NAME=par195></A>
+<b>Version 0.94 - March 12th 2002</b><br><A HREF=/myfiles/downloads/pobs094.zip>pobs094.zip</A><br />
+<br><DIV CLASS=normaal><A NAME=par180></A>
+<b>Version 0.93 - January 7th 2002</b><br>It has the following enhancements:<br>
+<ul>
+
+<li> Recursive directories<br>
+<li> Edit settings on screen<br>
+<li> Support for setcookie, session_register, session_is_registered and session_unregister<br>
+<li> Bugfixes</ul>
+
+<A HREF="/myfiles/downloads/pobs093.zip">pobs093.zip</A> 19 Kb<br>
+<br><DIV CLASS=normaal><A NAME=par159></A>
+<b>Version 0.92 - November 18th 2001</b><br>It has the following enhancements: <br>
+<ul>
+
+<li>Bugfix with &lt;INPUT NAME=&lt;fieldnamevariable&gt;. NAME needed to be in uppercase and &lt;fieldnamevariable&gt; could not have doublequotes ("&lt;fieldname&gt;") around it.<br>
+<li>Support for $HTTP_POST_VARS, $HTTP_GET_VARS and $HTTP_COOKIE_VARS <br>
+<li>More than 20% faster</ul>
+
+<A HREF="/myfiles/pobs092.zip">pobs092.zip</A><br>
+<A HREF="/myfiles/pobs092.tar">pobs092.tar</A><br>
+<br><DIV CLASS=normaal><A NAME=par147></A>
+<b>Version 0.91 - November 7th 2001</b><br><ul>
+
+<li>Increased performance. More than 2 times faster<br>
+<li>Option to replace edited files only<br>
+<li>Objects compatible<br>
+<li>Bugfix with $UdExcFuncArray<br>
+</ul> <A HREF='/myfiles/pobs091.zip'>pobs091.zip</A> <DIV CLASS=normaal><A NAME=par148></A>
+ <A HREF='/myfiles/pobs091.tar.gz'>pobs091.tar.gz</A> <br>
+<br>
+<DIV CLASS=normaal><A NAME=par99></A>
+<b>Version 0.9 - october 20th 2001</b><br> <A HREF='/myfiles/pobs09.zip'>pobs09.zip</A> Winzip<br>
+<DIV CLASS=normaal><A NAME=par100></A>
+ <A HREF='/myfiles/pobs09.tar.gz'>pobs09.tar.gz</A> Unix tar en gzip<br>
+<br>
+<DIV CLASS=normaal><A NAME=par181></A>
+</TD>
+<TD>
+&nbsp;</TD>
+<TD WIDTH=1 BGCOLOR=D9D9D9><HR WIDTH=0 NOSHADE SIZE=1></TD>
+<TD>
+&nbsp;</TD>
+<TD  WIDTH=200 VALIGN=TOP ALIGN=LEFT>
+<DIV CLASS=normaal><A NAME=par182></A>
+<TABLE WIDTH=100% BGCOLOR=#000000 BORDER=0 CELLSPACING=0 CELLPADDING=1>
+<TR>
+<TD WIDTH=100% VALIGN=TOP>
+<TABLE WIDTH=100% BORDER=0 CELLSPACING=0 CELLPADDING=5>
+<TR>
+<TD WIDTH=100% BGCOLOR=#FFFFFF VALIGN=TOP>
+<b>Code contributions</b><br>Several nice people have helped me in improving POBS. I would like to thank them here.<br />
+<br />
+<A HREF=http://mylinks.sk/ TARGET=std>Mark</A><br />
+<A HREF=http://www.urbilog.fr TARGET=std>Rémy Havet</A><br />
+<A HREF=http://www.phpinfo.net TARGET=std>Florian Perrichot</A><br />
+<A HREF=http://www.sb3d.com TARGET=std>Steve Beuret</A><br />
+<A HREF=http://www.heddesheimer.de TARGET=std>Marian Heddesheimer</A><br></TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<br></TD>
+</TR>
+</TABLE>
+<br>
+<br>
+<center>Walhalla Publicaties (c) 2001-2004</center></BODY>
+</HTML>

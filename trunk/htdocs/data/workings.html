@@ -1,0 +1,54 @@
+<h1>How it works</h1>
+
+<h2>Replace names</h2>
+
+<p>POBS replaces user-defined (NOT predefined) functions, constants and
+variables with a MD5 key of 8 characters. (It doesn't use MD5 keys of 32
+bytes, which is standard, since that would increase the size of your
+sourcecode). 8 bytes seems enough to give each functions or variable its
+unique name. MD5 is not reversible.</p>
+
+<p> The first letter of the new functionname is a "F", of a variable a "V"
+and of a constant a "C"</p>
+
+<p>
+  The function with name MakeImageHtml is replaced by Fee2c1bdc<br />
+  The variable $ImgText is replaced by $V1d9d94a6<br />
+  The constant USERDIR is replaced by C389a367e<br />
+</p>
+
+<h2>Futher obscuring</h2>
+
+<p> In addition, POBS can be instructed to concatenate lines and remove
+comments and indents. These are not irreversible since a person can write a
+program to add indents and returns. But it really makes a mess of your code
+and therefore furtherly discourages many wouldbe hackers from trying to
+reverse-engineer your code.</p>
+
+<h2>Exclude stuff</h2>
+
+<p>POBS allows you to indicate which user-defined variables, constants and
+functions need to be excluded from replacing. In the settings file
+"pobs-ini.inc" you can add these names to the arrays $UdExVarArray,
+$UdExcConstArray and $UdExcFuncArray. Do NOT use dollarsigns here.</p>
+
+<p>In $UdExVarArray you are allowed to use <strong>wildcards</strong> in the
+form of an asterix (*) at the end of each variablename. I.e. params_* will
+exclude params_type, params_address and params_name. So if you name your
+variables to a certain convention you can easily and securely exclude them by
+group. This way you don't have to be afraid you forgot to add it to the array
+in case you added a new variable to your code.</p>
+
+<h2>Process</h2>
+
+<p>POBS consists of 2 major processes.</p>
+
+<ol>
+  <li>POBS first scans all the files with the file-extensions allowed in the
+      sourcedirectory. While scanning, it makes a list of userdefined
+      variables, functions and constants it has located in your sourcecode.
+  </li>
+  <li>POBS now knows which ones it should replace and starts writing new
+      files in the target directory.
+  </li>
+</ol>
