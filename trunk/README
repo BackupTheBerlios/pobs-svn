@@ -1,0 +1,111 @@
+			    POBS - PHP Obfuscator
+
+  Version 1.0.0
+
+  Copyright (C) 2004 Rajesh Kumar <rks@meetrajesh.com>
+
+  Please report bugs or suggestions for improvements to the above
+  address or follow the instructions at:
+
+  http://pobs.berlios.de
+
+----------------------------------------------------------------------------
+INTRODUCTION
+
+  POBS is a PHP Code Obfuscator that requires PHP 5. It replaces user-defined
+  functions, constants and variables with an MD5 key.
+
+  Features are:
+  
+  * No need for external libraries or decoders.
+  * Quite hard to reverse-enginner.
+  * Cross-platform. Runs on any machine with PHP 5.
+  * Can obfuscate PHP code written for any PHP version.
+  * Allows use of other encoders such as the Zend Encoder.
+  * Open source. Free to scrutinize the code and re-distribute.
+  * Highly efficient and fast. User friendly.
+  * Continually evolving, and feature rich.
+
+----------------------------------------------------------------------------
+REQUIREMENTS
+
+  - Apache*          (>= 1.3.3)
+  - PHP              (>= 5.0.1)
+
+ *The Apache Web Server is required only if running in www mode.
+ *Any web server that runs PHP can be used in place of Apache.
+
+----------------------------------------------------------------------------
+INSTALLING
+
+  Refer to the file INSTALL for installation guidelines.
+
+
+----------------------------------------------------------------------------
+QUICK USAGE SUMMARY
+
+  Wouldn't be cool to be able to do something like this just before you ship your PHP code to a client?
+
+  $ php pobs.php my-sourcedir
+  $ mv my-sourcedir_pobsed myPHPApp
+
+  And then distribute a zipped copy of myPHPApp to your client. Your client
+  would then *have* to come to you for bug fixes and feature requests, and you
+  would be able to sleep well knowing that your intellectual property is
+  still under your domain.
+  
+----------------------------------------------------------------------------
+KNOWN BUGS
+
+  * 
+
+----------------------------------------------------------------------------
+ENHANCEMENTS
+
+  Things I would like to see improved in POBS:
+
+    * 
+
+  (See the TODO file for a complete list)
+
+----------------------------------------------------------------------------
+ACKNOWLEDGEMENTS
+
+  Thanks to:
+
+  * Frank Karsten       - for initiating the project  - http://www.mywalhalla.net/
+  * Mark                - for improving POBS          - http://mylinks.sk/
+  * Rémy Havet          - for improving POBS          - http://www.urbilog.fr/
+  * Florian Perrichot   - for improving POBS          - http://www.phpinfo.net/
+  * Steve Beuret        - for improving POBS          - http://www.sb3d.com/
+  * Marian Heddesheimer - for improving POBS          - http://www.heddesheimer.de/
+
+  Bug Reports and help testing:
+  Random Hacker, Godly Stewart, Whatever His, Anty Panty
+
+  Feature requesters:
+  Random Hacker
+
+----------------------------------------------------------------------------
+HISTORY
+
+
+----------------------------------------------------------------------------
+LICENSE
+
+  POBS is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+----------------------------------------------------------------------------
+$Id$

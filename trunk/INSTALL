@@ -1,0 +1,60 @@
+
+Installing POBS
+_________________________________________________________________
+
+
+BASIC INSTALLATION
+==================
+
+Installing POBS is as easy as I could think of. Just unzip the downloaded
+file (which presumably you have already done as you're reading this) and put
+it in a directory that is accessible by your web-server. POBS is a collection
+of files in just 1 directory.
+
+Before executing POBS you are advised to read the manual that is provided
+through the POBS website at http://pobs.mywalhalla.net. Also check the
+settings in pobs-ini.inc and adjust them to suit your needs. When you run
+POBS for the first time you should at least adjust the $SourceDir and the
+$TargetDir variables.
+
+If you have a large amount of PHP source to be POBSed, check your php.ini and
+see whether it runs in "Safe mode" (also, POBS warns for it). If it does,
+POBS can not adjust the timeout setting as indicated in pobs-ini.inc and the
+processing might be terminated before POBS has finished the replacement of
+all your PHP codefiles. You might need to restart your webserver after
+adjusting the php.ini file.
+
+After having checked everything and having adjusted the settings in
+pobs-ini.inc you point your browser to pobs.php and press <Enter>.
+
+
+COMMAND LINE USAGE
+==================
+
+The command line version of POBS requires no installation whatsoever. It
+assumes, however, that you have a working PHP-CLI installation, and can
+execute scripts via the command line.
+
+Invoke the POBS command line program as shown:
+
+$ php cmd_line/pobs.php [SOURCE_FILE] | [SOURCE_DIR]
+
+To get a brief usage message, simply pass the --help option to pobs.php or
+run the program with no arguments.
+
+Requirements and results to be expected when POBSing:
+
+1)  - When POBS is run against a SOURCE_FILE, SOURCE_FILE must be readable by
+      the user invoking the PHP binary, and the directory where SOURCE_FILE
+      lives must be writable by the same user.
+
+    - When POBS is run against a SOURCE_DIR, the directory in which
+      SOURCE_DIR lives must be writable by the user executing POBS.php.
+
+2)  - When POBS is run against a SOURCE_FILE, a backup of the original file be
+      created and will have the name SOURCE_FILE.pobs.bak, and the
+      SOURCE_FILE will become the POBS'ed file.
+
+    - When POBS is run against a SOURCE_DIR, the original source dir
+      SOURCE_DIR will remain untouced, but a new directory SOURCE_DIR_pobsed
+      will be created in the same folder as SOURCE_DIR.
