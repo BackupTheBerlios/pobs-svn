@@ -28,19 +28,26 @@
 
 ?>
 
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
 <head>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta http-equiv="Content-Language" content="english" />
+  
   <title>POBS - A PHP Obfuscator</title>
-  <style type="text/css">
-    body { font-family: Arial, sans serif; font-size:<?=($FontSize + 2)?>pt; vertical-align: top; }
-    td   { font-family: Verdana, sans serif; font-size:<?=$FontSize?>pt; vertical-align: top; }
-  </style>
+  <link rel="stylesheet" type="text/css" media="all" href="pobs.css" />
+
 </head>
+
 <body>
 
 <?php
 
-    if (!empty($_POST)) extract($_POST);
+if (!empty($_POST)) extract($_POST);
     else if (!empty($HTTP_POST_VARS)) extract($HTTP_POST_VARS);
 
     if ( isset( $OK ) ) CheckSafeMode();
@@ -1293,6 +1300,7 @@ function CheckSafeMode() {
     $SafeMode = strtolower(get_cfg_var("safe_mode"));
     if (!$SafeMode) set_time_limit($TimeOut);
         else echo "<b><FONT COLOR=orange>Warning: SafeMode is on. Can not set timeout.</b></FONT><br>"; 
+
 }
 
 ?>

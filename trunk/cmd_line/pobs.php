@@ -6,7 +6,7 @@
    +--------------------------------------------------------------------+
    | POBS - The PHP Obfuscator                                          |
    +--------------------------------------------------------------------+
-   | Copyright (c) 2004 RKS Development Labs                            |
+   | Copyright (c) 2004 Rajesh Kumar                                    |
    +--------------------------------------------------------------------+
    | This program is free software; you can redistribute it and/or      |
    | modify it under the terms of the GNU General Public License as     |

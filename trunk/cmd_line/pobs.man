@@ -1,0 +1,73 @@
+.\"
+.\" "$Id$"
+.\"
+.\"   Manual page for POBS, a PHP Obfuscator.
+.\"
+.\"   Copyright 2004 by Rajesh Kumar.
+.\"
+.\"   POBS is distributed under the terms of the GNU General Public License
+.\"   which is described in the file "COPYING".
+.\"
+.TH POBS 1 "POBS 1.0.0" "21 August 2004" "POBS"
+.SH NAME
+POBS \- obfuscate PHP source files rendering it unreable by humans.
+.sp
+.SH SYNOPSIS
+pobs.php [options] filename1.php [ ... filenameN.php ]
+.LP
+pobs.php [options] source_dir1 [ ... source_dirN ]
+.LP
+POBS [options] -
+.sp
+.SH DESCRIPTION
+\fBPOBS\fR or PHP Obfuscator converts PHP sourcefiles into a human-unreable
+format by replacing user-defined functions, constants and variables with an
+8-character MD5 key. POBS doesn't use MD5 keys of 32 bytes, which is the
+standard, since that would increase the size of your source code
+considerably. 8 bytes seems enough to give each function or variable a unique
+name. MD5 is a one-way hash and is not reversible.
+.LP
+In the first form of invoking \fBPOBS\fR, pass any number of filenames to
+POBS. Note that the files will be treated as individual projects.
+.LP
+The second form of \fBPOBS\fR reads PHP source files from a directory and
+produces a POBS'ed folder \fIsource_dir_pobsed\fR in the same
+directory as the source_dir. \fBPOBS\fR will descend the directory
+recursively looking for source files with extensions given by the variable
+$FileExtArray in the configuration file \fIpobs.conf.php\fR.
+.LP
+Note that both files and directory can be passed as arguments to pobs.php,
+but each will be treated as separate entities and will be POBS'ed
+individually. To obfuscate a number of related files together, put them in a
+folder and pass the folder name as argument to \fBPOBS\fR. Or alternatively,
+concatenate your files with \fIcat\fR and pass the result to \fBPOBS\fR via standard
+input.
+.LP
+The third form of \fBPOBS\fR reads a PHP source from stdin, which allows you
+to use \fBPOBS\fR as a filter.
+.SH OPTIONS
+.LP
+The following options are available when invoking the command line version of
+\fBPOBS\fR:
+
+.SH SEE ALSO
+POBS Website Documents at:
+.LP
+http://pobs.berlios.de
+.SH AUTHOR
+Rajesh Kumar <rks@meetrajesh.com>
+.SH COPYRIGHTS
+.LP
+\fBPOBS\fR is copyright of their respective authors. This program is free
+software; you can redistribute it and/or modify it under the terms of the GNU
+General Public License as published by the Free Software Foundation; either
+version 2 of the License, or (at your option) any later version.
+.SH NO WARRANTY
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+details.
+.\"
+.\" End of "$Id$".
+.\"
+
