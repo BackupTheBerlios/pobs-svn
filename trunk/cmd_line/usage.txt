@@ -1,0 +1,25 @@
+POBS PHP Obfuscator version 1.0.0 revision 6
+Copyright (C) 2004 by Rajesh Kumar
+http://www.pobs.net/
+
+POBS comes with ABSOLUTELY NO WARRANTY.  This is free software, and you
+are welcome to redistribute it under certain conditions.  See the GNU
+General Public Licence for details.
+
+POBS is a PHP script obfuscater that replaces all variables, functions and
+classes with their equivalent MD5 hashes. It can also strip whitespace
+and comments if desired.
+
+Usage: ./pobs [OPTION]... SRC [SRC]... 
+SRC is either be a file or a directory
+
+Options
+ -h, --help, --usage         show this help screen
+ -v, --verbose               talk to me while POBSing
+ -V, --version               print version information
+     --dry-run               try operation but do nothing
+     --strip-comments        strip comments leaving white-space intact
+                             requires StripWhiteSpace config variable to be false                             
+
+Please see the website http://www.pobs.net/ for full documentation, updates,
+bug reports, faq and answers.

@@ -1,0 +1,39 @@
+rajesh@rbox cmd_line $ pwd
+/home/rajesh/pobs/cmd_line
+rajesh@rbox cmd_line $ cp core.class.php tmp.php
+`core.class.php' -> `tmp.php'
+rajesh@rbox cmd_line $ ./pobs --dry-run --verbose tmp.php 
+Creating temporary directory POBS_2863178c
+
+Scan Complete. Preparing to write to target...
+Changing directory to POBS_2863178c_pobs/
+
+1 file(s) obfuscated with no errors.
+8 KB of output written to POBS_2863178c_pobs/
+Please execute scripts to ensure they work as intended.
+
+Elapsed Time: 0.02 seconds
+rajesh@rbox cmd_line $ ./pobs --verbose tmp.php 
+Creating temporary directory POBS_e28b5236
+
+Scanning for functions...
+Replacing functions with MD5 keys... Done
+
+Scanning for classes...
+Replacing classes and instances with MD5 keys... Done
+
+Scanning for variables...
+Replacing variables with MD5 keys... Done
+
+Scan Complete. Preparing to write to target...
+Changing directory to POBS_e28b5236_pobs/
+
+1 file(s) obfuscated with no errors.
+9 KB of output written to POBS_e28b5236_pobs/
+Please execute scripts to ensure they work as intended.
+
+Elapsed Time: 0.04 seconds
+
+Output written to tmp.php_pobs
+rajesh@rbox cmd_line $ less tmp.php_pobs 
+rajesh@rbox cmd_line $ 

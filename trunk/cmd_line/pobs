@@ -1,5 +1,4 @@
-#!/bin/php -q
-
+#!/usr/bin/php -q
 <?php
 
 /*
@@ -21,12 +20,58 @@
    | August 20 2004                                                     |
    | Version 1.00                                                       |
    +--------------------------------------------------------------------+
-   | AUTHOR: Rajesh Kumar <rajesh@meetrajesh.com>                       |
+   | AUTHOR: Rajesh Kumar <rks@meetrajesh.com>                          |
    +--------------------------------------------------------------------+
   
    $Id$
 
 */
 
+$TimeStart = microtime(true);
+
+require_once 'cfg.class.php';
+require_once 'core.class.php';
+require_once 'init.class.php';
+require_once 'getopts.class.php';
+
+require_once 'Console/Getopt.php';
+
+$OPT = new ConsoleOptionsHandler;
+$INI = new PobsInit;
+$CFG = new ConfigHandler('pobs.conf.php');
+
+foreach ($OPT->get('source_dir') as $file_dir) {
+
+    $CFG->set_source_dir($file_dir);
+    $API = new PobsCore($CFG, $OPT, $TimeStart);
+
+    if (!is_readable(realpath($CFG->get('SourceDir')))) {
+    
+        echo('Error: Source ' . (is_dir(realpath($CFG->get('SourceDir'))) ? 'Directory' : 'file') . ' ' . 
+                                 $CFG->get('SourceDir') . ' does not exist or is not readable.' . "\n");
+        continue;
+
+    }
+
+    if (is_file($CFG->get('SourceDir'))) {
+        $API->set_stage_file();
+    }
+
+    chdir($CFG->get('SourceDir') . '/../');
+
+    if (!$API->create_target_dir($CFG->get('TargetDir'))) {
+        continue;
+    }
+
+    $API->gen_long_file();
+    $API->replace_with_hashes();
+    $API->write_target_files();
+    $API->time_elapsed();
+
+    if (is_file($file_dir)) {
+        $API->cleanup_stage_file($file_dir);
+    }
+
+}
 
 ?>

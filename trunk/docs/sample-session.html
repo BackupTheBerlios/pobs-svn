@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+  <head>
+    <title>POBS Sample Session</title>
+    <style type="text/css">
+    <!--
+      body {
+        color: #fafafa;
+        background-color: #121212;
+      }
+      .eshell-prompt {
+        /* eshell-prompt-face */
+        color: #ffc0cb;
+        font-weight: bold;
+      }
+      a {
+        color: inherit;
+        background-color: inherit;
+        font: inherit;
+        text-decoration: inherit;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+    -->
+    </style>
+  </head>
+  <body>
+    <pre>
+Welcome to the Emacs shell
+
+<span class="eshell-prompt">/home/rajesh/pobs/cmd_line $ </span>pwd
+/home/rajesh/pobs/cmd_line
+<span class="eshell-prompt">/home/rajesh/pobs/cmd_line $ </span>cp core.class.php tmp.php
+<span class="eshell-prompt">/home/rajesh/pobs/cmd_line $ </span>./pobs --dry-run --verbose tmp.php 
+Creating temporary directory POBS_982d6cfa
+
+Scan Complete. Preparing to write to target...
+Changing directory to POBS_982d6cfa_pobs/
+
+1 file(s) obfuscated with no errors.
+8 KB of output written to POBS_982d6cfa_pobs/
+Please execute scripts to ensure they work as intended.
+
+Elapsed Time: 0.14 seconds
+
+<span class="eshell-prompt">/home/rajesh/pobs/cmd_line $ </span>./pobs --verbose tmp.php 
+Creating temporary directory POBS_221b772b
+
+Scanning for functions...
+Replacing functions with MD5 keys... Done
+
+Scanning for classes...
+Replacing classes and instances with MD5 keys... Done
+
+Scanning for variables...
+Replacing variables with MD5 keys... Done
+
+Scan Complete. Preparing to write to target...
+Changing directory to POBS_221b772b_pobs/
+
+1 file(s) obfuscated with no errors.
+9 KB of output written to POBS_221b772b_pobs/
+Please execute scripts to ensure they work as intended.
+
+Elapsed Time: 0.09 seconds
+
+Output written to <strong>tmp.php_pobs</strong>
+
+<span class="eshell-prompt">/home/rajesh/pobs/cmd_line $ </span>less tmp.php_pobs
+<span class="eshell-prompt">/home/rajesh/pobs/cmd_line $ </span>exit</pre>
+  </body>
+</html>
