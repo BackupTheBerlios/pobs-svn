@@ -8,7 +8,7 @@ if (isset($_GET['page'])) {
 
     dump_data($data_dir . '/' . $_GET['page']);
     
-    $tmp = preg_replace('#<a href="(\w+)\.html">([\w ]+)</a><br />#', '<a href="build.php?page=\1.html">\2</a><br />', ob_get_contents());
+    $tmp = preg_replace('#<li><a href="(\w+)\.html">([\w ]+)</a></li>#', '<li><a href="build.php?page=\1.html">\2</a></li>', ob_get_contents());
     ob_end_clean();
     echo $tmp;
     exit;

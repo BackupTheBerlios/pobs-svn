@@ -1,9 +1,11 @@
 body { 
 
-  font: small Gerogia, Verdana, sans-serif;
+  font: small Gerogia, Verdana, Geneva, Arial, Helvetica, sans-serif;
   color: #000;
-  background: #fff url("../img/bg.gif") no-repeat top left;
+  background: #6699cc url("../img/bg.gif") no-repeat top left;
   line-height: 180%;
+  padding: 0;
+  margin: 0;
   
 }
 
@@ -84,55 +86,63 @@ br {
 
 }
 
-div.poll { 
-
-  border: 1px #000 solid;
-  padding: 0 0 2px 8px;
-
-}
-
-div.menubar { 
+#menubar { 
 
   background: #8dcff4 url("../img/menu_bg.gif") repeat-y;
   position: absolute;
   left: 0;
-  width: 120px;
-  padding: 20px 30px 300px 20px;
-  font-weight: bold;
+  margin-top: -15px;
+  padding: 10px 24px 150px 15px;
 
 }
 
-div.menubar a:hover { 
+#menubar ul {
+
+  list-style-type: none;
+  font-weight: bold;
+  padding-left: 0;
+
+}
+
+#menubar ul a:hover { 
 
   border: 0;
 
 }
 
-div.mainbar { 
+#mainbar { 
 
-  border: 1px #dedede solid;
-  border-width: 0 1px 1px 0;
+  width: auto;
+  background: #fff;
   text-align: justify;
-  margin: 80pt 0 0 130pt;
-  padding: 0 25px 15px 0;
-
-}
-
-div.leftbar { 
-
-  width: 70%;
-  border: 1px #dedede solid;
-  border-width: 0 1px 0 0;
-  padding: 0 25px 15px 0;
+  margin: 120px 0 0 150px;
+  padding: 0 25px 0 25px;
+  min-width: 120px;
+  min-height: 480px;
 
 }
 
 div.sidebar {
 
   float: right;
-  width: 25%;
+  max-width: 22%;
   padding-top: 30px;
+  margin-left: 20px;
+  text-align: center;
+
+}
+
+div.poll { 
+
   text-align: left;
+  border: 1px #000 solid;
+  padding: 0 8px 10px 8px;
+
+}
+
+div.poll h4 { 
+
+  text-transform: uppercase;
 
 }
 
@@ -140,5 +150,22 @@ hr {
 
   border: 1px #dedede solid;
   height: 1px;
+
+}
+
+abbr:hover { 
+
+  background-color: yellow;
+  border-bottom: 0;
+
+}
+
+#footer { 
+
+  font-size: x-small;
+  text-align: center;
+  color: #777;
+  padding-top: 10px;
+  padding-bottom: 4px;
 
 }
