@@ -1,0 +1,39 @@
+ABOUT POBS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+POBS (PHP Obfuscat[eo]r), as the name suggests, is a PHP code obfuscator. It
+replaces all variables, functions, classes and class methods with a
+corresponding MD5 hash. All whitespace and comments are also stripped.
+
+The goal of this project is to obfuscate any PHP application as much as
+possible, so that it is almost impossible for a human reader to look at and
+understand the flow of code. This is to your advantage because it ensures
+that your client comes to you, and only you, for any upgrades or bug-fixes
+and doen not find a 3rd party service to do so. The PHP interpreter sees the
+PHP files no differently and will execute it in the same manner, and thus the
+resulting HTML that is sent to the browser will be the same.
+
+Another advantage is that POBSing a large application can reduce your
+application's size by nearly 50% as the PHP parser doesn't care about
+whitespace and comments. POBS employs some high-tech PCRE patterns to speed
+up regular expression parsing and compilations. All replacements are made by
+regex searches and the goal is to complete the process in the least number of
+seconds. POBS will also return a report file for statistical information and
+a tags file which wil contain all replaced strings (variable names, classes
+and functions).
+
+An implicit goal for this project is to try out some cutting-edge PHP 5
+features and report bugs to the PHP Core development team. Also the
+development lead for POBS would like to try out a new way of organizing this
+open-source project, chucking the traditional, ineffective methods out the
+window. Since POBS is not a quick-fix solution and can sometimes take a very
+long time to obfuscate a script file, we invite all competent PHP programmers
+to show-off their PHP finesse by employing the very latest and greatest PHP
+patterns, techniques and hacks. Vigorous testing practices will be employed,
+and this has the potential to unearth bugs in the latest PHP distribution,
+which will be promptly reported to bugs.php.net.
+
+POBS is both a command-line and web-based application, and uses a few PEAR
+packages to facilitate development.
+
+Rajesh <rks@meetrajesh.com>
+POBS Project Lead
