@@ -32,12 +32,13 @@ final class PobsCore {
     private $cfg;
 
     private $tree_hier;
-    private $var_list = array();
     private $buf;
     private $file_sep = '*@';
     private $time_start;
-    
 
+    private $var_list = array();
+    private $constructs = array();
+    
     public function __construct(ConfigHandler $cfg, ConsoleOptionsHandler $opt, $time_start) {
 
         $this->opt = $opt;
@@ -50,7 +51,7 @@ final class PobsCore {
 
         $target_dir = $this->cfg->get('TargetDir');
 
-#       //########## COMMENT!! #### // uncomment only while testing
+#       //########## COMMENT!! #### // uncomment only when testing
 #        `chmod -R 777 $target_dir 2>&1 > /dev/null`;
 #       `rm -rf $target_dir`;
 #       //########## COMMENT!! ####
@@ -82,13 +83,13 @@ final class PobsCore {
         $this->strip_dots($files);
 
         $lamb = $this->cfg->get('StripWhiteSpace') ? 'php_strip_whitespace' : 'file_get_contents';
-        $copy_file_asis = false;
 
         foreach ($files as $file) {
 
+            $copy_file_asis = false;
             $file = $dir . '/' . $file;
 
-            if ($this->is_exc_file($file) && (!$copy_file_asis = $this->copy_file_asis($file))) {
+            if ($this->is_exc_file($file) && (FALSE === $copy_file_asis = $this->copy_file_asis($file))) {
                 continue;
             }
 
@@ -161,11 +162,9 @@ final class PobsCore {
 
             return in_array($tmp, $this->cfg->get('UdExcFileArray')) || $this->is_bad_ext($file);
 
-        } else {
-
-            return false;
-
         }
+
+        return false;
 
     }
 
@@ -186,6 +185,8 @@ final class PobsCore {
 
     private function my_fnmatch($pats, $filename) {
 
+#        echo '"' . $filename . "\n";
+
         foreach ((array) $pats as $pat) {
             
             if (fnmatch($pat, $filename)) {
@@ -200,7 +201,12 @@ final class PobsCore {
 
     private function copy_file_asis($file) {
 
+#        echo '+' . $this->get_path($file) . "\n";
+
         return $this->my_fnmatch($this->cfg->get('FileExtCopyArray'), $this->get_path($file));
+
+#        var_dump($foo);
+#        return $foo;
 
     } /*  ----o
        *      |
@@ -223,19 +229,21 @@ final class PobsCore {
     public function buf_get_len() {
 
         return strlen($this->buf);
-
     }
 
     public function buf_dump() {
 
         fputs(STDOUT, $this->buf);
-
     }
 
     private function filter_small_values($val) {
 
-        return strlen($val) > 3 && !is_numeric($val);
+        return strlen($val) > 3;
+    }
 
+    private function filter_method_calls($val) {
+
+        return !(strlen($val) == ($this->cfg->get('MD5KeyLen') + 1)  && substr($val, 0, 1) == 'F');
     }
 
     private function sort_length($a, $b) {
@@ -274,6 +282,44 @@ final class PobsCore {
 
         }
 
+        /**
+         * Match classes definitions
+         * PREG_PATTER_ORDER is unneeded
+         * '("\\<\\(class\\|interface\\)[ \t]*\\(\\(?:\\sw\\|\\s_\\)+\\)?"
+         * '("\\<\\(new\\|extends\\|implements\\)\\s-+\\$?\\(\\(?:\\sw\\|\\s_\\)+\\)"
+         */
+
+        $this->out("\n" . 'Scanning for classes...');
+        preg_match_all('/class\s+(\w+)(?:\s+extends\s+(\w+))?\s*\{/i', $this->buf, $catches, PREG_SET_ORDER);
+
+        foreach ($catches as $catch) {
+
+            if (!in_array($catch[1], $this->cfg->get('UdExcClassArray'))) {
+
+                $hash = $this->hash($catch[1], 'class');
+                $this->constructs[] = $catch[1];
+
+                $this->buf = preg_replace('/class\s+' . $catch[1] . '(\s+|\{)/i', 'class ' . $hash . '\1', $this->buf);
+                $this->buf = preg_replace('/new\s' . $catch[1] . '(\W+)/i', 'new ' . $hash . '\1', $this->buf); // instantiations
+                $this->buf = preg_replace('/function\s+' . $this->hash($catch[1], 'func') . '(\b)/', 'function ' . $this->hash($catch[1], 'cnstrtr') . '\1', $this->buf); // constructs
+                $this->buf = preg_replace('/' . $catch[1] . '::/i' , $hash . '::', $this->buf);
+                $this->buf = preg_replace('/::' . $this->hash($catch[1], 'func') . '\(/', '::' . $this->hash($catch[1], 'class') . '(', $this->buf);
+
+            }
+            
+            if (isset($catch[2]) && !in_array($catch[2], $this->cfg->get('UdExcClassArray'))) {
+
+                $this->buf = preg_replace('/class\s+(\w{' . ($this->cfg->get('MD5KeyLen') + 1) .'})\s+extends\s+' . $catch[2] . '(\s+|\{)/i',
+                                          'class \1 extends ' . $this->hash($catch[2], 'class') . '\2', 
+                                          $this->buf);
+
+            }
+
+        }
+
+        $this->out('Replacing classes and instances with MD5 keys... Done');
+
+
         /*
          * Match variables
          * PREG_PATTER_ORDER is unneeded
@@ -296,59 +342,24 @@ final class PobsCore {
         }
 
         /*
-         * Match $this->var_name style variables
+         * Match $this->var_name and $API->var_name style variables
          * PREG_PATTER_ORDER is unneeded
          */
 
         $this->out("\n" . 'Scanning for class variables...');
-        preg_match_all('/\$this->(\w+)+/i', $this->buf, $catches, PREG_PATTERN_ORDER);
+        preg_match_all('/\->(\w+)/i', $this->buf, $catches, PREG_PATTERN_ORDER);
         $this->out('Replacing class variables with MD5 keys... Done');
 
         $catches = array_unique($catches[1]);
         $catches = array_diff($catches, array_merge($this->cfg->get('StdExcVarArray'), $this->cfg->get('UdExcVarArray')));
         $catches = array_filter($catches, array($this, 'filter_small_values'));
+        $catches = array_filter($catches, array($this, 'filter_method_calls'));
         usort($catches, array($this, 'sort_length'));
 
         foreach ($catches as $catch) {
 
-            #$this->buf = str_replace('->' . $catch, '->' . $this->hash($catch, 'var'), $this->buf);
             $this->buf = preg_replace('/->' . preg_quote($catch) . '(?!\()/', '->' . $this->hash($catch, 'var'), $this->buf);
-
         }
-
-        return;
-
-        /**
-         * Match classes definitions
-         * PREG_PATTER_ORDER is unneeded
-         * '("\\<\\(class\\|interface\\)[ \t]*\\(\\(?:\\sw\\|\\s_\\)+\\)?"
-         * '("\\<\\(new\\|extends\\|implements\\)\\s-+\\$?\\(\\(?:\\sw\\|\\s_\\)+\\)"
-         */
-
-        $this->out("\n" . 'Scanning for classes...');
-        preg_match_all('/class\s+(\w+)(?:\s+extends\s+(\w+))?\s*\{/i', $this->buf, $catches, PREG_SET_ORDER);
-
-        foreach ($catches as $catch) {
-
-            $hash = $this->hash($catch[1], 'class');
-
-            $this->buf = preg_replace('/class\s+' . $catch[1] . '(\s+|\{)/i', 'class ' . $hash . '\1', $this->buf);
-            $this->buf = preg_replace('/new\s' . $catch[1] . '(\W+)/i', 'new ' . $hash . '\1', $this->buf); // instantiations
-            $this->buf = preg_replace('/function\s+' . $this->hash($catch[1], 'func') . '/', 'function ' . $hash, $this->buf); // cons
-            $this->buf = preg_replace('/' . $catch[1] . '::/i' , $hash . '::', $this->buf);
-            $this->buf = preg_replace('/::' . $this->hash($catch[1], 'func') . '\(/', '::' . $this->hash($catch[1], 'class') . '(', $this->buf);
-            
-            if (isset($catch[2])) {
-
-                $this->buf = preg_replace('/class\s+(\w{9})\s+extends\s+' . $catch[2] . '(\s+|\{)/i',
-                                          'class \1 extends ' . $this->hash($catch[2], 'class') . '\2', 
-                                          $this->buf);
-
-            }
-
-        }
-
-        $this->out('Replacing classes and instances with MD5 keys... Done');
 
     }
 
@@ -411,9 +422,11 @@ final class PobsCore {
 
         }
 
+        require_once 'Console/Color.php';
+
         $this->out('');
         $this->out(count($this->tree_hier) . ' file(s) obfuscated with no errors.');
-        $this->out(round($this->buf_get_len() / 1024) . ' KB of output written to ' . $this->cfg->get('TargetDir') . '/');
+        $this->out(round($this->buf_get_len() / 1024) . ' KB of output written to ' . Console_Color::convert('%9' . $this->cfg->get('TargetDir') . '%n') . '/');
         $this->out('Please execute scripts to ensure they work as intended.');
 
     }

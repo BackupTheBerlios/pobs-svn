@@ -43,15 +43,17 @@ class ConfigHandler {
 #        $this->UdExcDirArray[] = 'SourceDir';
 #        $this->UdExcDirArray[] = 'TargetDir';
 
-        foreach (get_defined_functions() as $val) {
-            $this->StdExcFuncArray[] = $val;
-        }
-
-        foreach (get_declared_classes() as $class) {
-            foreach (get_class_methods($class) as $val) {
-                $this->StdExcFuncArray[] = $val;
-            }
-        }
+        /*
+        *  foreach (get_defined_functions() as $val) {
+        *      $this->StdExcFuncArray[] = $val;
+        *  }
+        * 
+        *  foreach (get_declared_classes() as $class) {
+        *      foreach (get_class_methods($class) as $val) {
+        *          $this->StdExcFuncArray[] = $val;
+        *      }
+        *  }
+        */
 
         $this->StripWhiteSpace = (bool) $this->StripWhiteSpace;
 

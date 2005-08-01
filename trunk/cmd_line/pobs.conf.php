@@ -94,10 +94,10 @@
     $FileExtArray     = array('*.php');
 
     // Sometimes, you may need certain HTML files to be in your target folder (You may be passing them to readfile())
-    // But you do may not want to process an entire directory
+    // But you may not want to process an entire directory
     // You may just want to copy as-is certain inc or html files
     // Example array("docs/foobar.html", "inc/tada.php", ".js");
-    $FileExtCopyArray = array('inc/*.html');
+    $FileExtCopyArray = array('inc/*.html', 'inc/*.tmpl');
         
     // If JavaScript replacement is checked, then files with extensions 
     // specified below will be processed as well, and will be considered 
@@ -242,7 +242,7 @@
     );
 
     // for ArrayAccess implementation
-    $StdExcFuncArray = array('offsetExists', 'offsetGet', 'offsetSet', 'offsetUnset');
+    $StdExcFuncArray  = array('__construct', '__autoload', '__destruct', '__call', 'offsetExists', 'offsetGet', 'offsetSet', 'offsetUnset');
 
     // Types of comments that will be replaced
     // Available types are: '/**/', '//' and '#'
@@ -259,7 +259,7 @@
     
     // Variables in this array will be not replaced
     // All variables less than 4 characters long are automatically excluded
-    $UdExcVarArray    = array('');
+    $UdExcVarArray    = array('fetch', 'num_rows', 'post');
 
 /*
 
@@ -278,14 +278,20 @@
     // Constants in this array will be not replaced
     $UdExcConstArray  = array('Dummy Entry');
 
-    // Classes in this array will be not replaced
-    // Note that if classes are ignored, corresponding constructor functions are NOT ignored
-    // (for PHP5 compatibility where methods can have the same name as the class, provided a __construct() method
-    // is found). You will need to manually add constructors of classes that are being ignored to $UdExcFuncArray
-    $UdExcClassArray   = array();
+    // - Classes in this array will be not replaced
+    // - Note that if classes are ignored, corresponding constructor functions are NOT ignored (must manually addto $udExcFuncArray)
+    // - Note: POBS does not support class autoloading with the __autoload function. Either add those class here or add a require_once
+   //          statement before the class is instantiated
 
-    // Functions in this array will be not replaced
-    $UdExcFuncArray   = array('start', 'open', 'close', 'format_text_callback', '__autoload', '__construct');
+    $UdExcClassArray   = array('Perms', 'String', 'DropDown');
+
+    // - Functions (and methods) in this array will be not replaced
+    // - In PHP5, a class that has a method called __construct() can have
+    //   another method with the same name as that of the class. However, POBS
+    //   will consider this as a contructor and will obfuscate it. Add those
+    //   function names here to avoid this problem.
+
+    $UdExcFuncArray   = array('start', 'open', 'close', 'query', 'fetch', 'format_text_callback');
 
     // - Files that will be excluded from obfuscation
     // - Can use shell regexps such as '*cat_*.php'
