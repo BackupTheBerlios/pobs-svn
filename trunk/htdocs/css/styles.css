@@ -55,7 +55,6 @@ img.news {
   
 }
 
-
 a.screenshot:hover { 
 
   border: 0;
@@ -88,7 +87,7 @@ br {
 
 #menubar { 
 
-  background: #8dcff4 url("../img/menu_bg.gif") repeat-y;
+  background: #8dcff4 url("../img/menu_bg.gif") no-repeat 0 40px;
   position: absolute;
   left: 0;
   top: 0;
