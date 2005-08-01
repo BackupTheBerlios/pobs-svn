@@ -238,6 +238,12 @@ final class PobsCore {
 
     }
 
+    private function sort_length($a, $b) {
+
+        return strlen($a) < strlen($b);
+
+    }
+    
     public function replace_with_hashes() {
 
         if ($this->opt->get('dry_run')) {
@@ -258,15 +264,59 @@ final class PobsCore {
         preg_match_all('/function\s+(\w+)\s*\(/i', $this->buf, $catches, PREG_PATTERN_ORDER);
         $this->out('Replacing functions with MD5 keys... Done');
 
-        $catches = array_diff($catches[1], $this->cfg->get('UdExcFuncArray'));
+        $catches = array_diff($catches[1], array_merge($this->cfg->get('UdExcFuncArray'), $this->cfg->get('StdExcFuncArray')));
         $catches = array_filter($catches, array($this, 'filter_small_values'));
 
-        foreach($catches as $catch) {
+        foreach ($catches as $catch) {
 
             $this->buf = preg_replace('/(?<!new\s|_|\B)' . $catch . '\s*\(/', $this->hash($catch, 'func') . '(', $this->buf);
             $this->buf = preg_replace('/new\s+' . $this->hash($catch, 'func') . '\(/', 'new ' . $catch . '(', $this->buf);
 
         }
+
+        /*
+         * Match variables
+         * PREG_PATTER_ORDER is unneeded
+         * '("\\$\\(\\(?:\\sw\\|\\s_\\)+\\)" (1 font-lock-variable-name-face)) ; $variable
+         */
+
+        $this->out("\n" . 'Scanning for regular variables...');
+        preg_match_all('/\$(\w+)/i', $this->buf, $catches, PREG_PATTERN_ORDER);
+        $this->out('Replacing variables with MD5 keys... Done');
+
+        $catches = array_unique($catches[1]);
+        $catches = array_diff($catches, array_merge($this->cfg->get('StdExcVarArray'), $this->cfg->get('UdExcVarArray')));
+        $catches = array_filter($catches, array($this, 'filter_small_values'));
+        usort($catches, array($this, 'sort_length'));
+
+        foreach ($catches as $catch) {
+
+            $this->buf = str_replace('$' . $catch, '$' . $this->hash($catch, 'var'), $this->buf);
+
+        }
+
+        /*
+         * Match $this->var_name style variables
+         * PREG_PATTER_ORDER is unneeded
+         */
+
+        $this->out("\n" . 'Scanning for class variables...');
+        preg_match_all('/\$this->(\w+)+/i', $this->buf, $catches, PREG_PATTERN_ORDER);
+        $this->out('Replacing class variables with MD5 keys... Done');
+
+        $catches = array_unique($catches[1]);
+        $catches = array_diff($catches, array_merge($this->cfg->get('StdExcVarArray'), $this->cfg->get('UdExcVarArray')));
+        $catches = array_filter($catches, array($this, 'filter_small_values'));
+        usort($catches, array($this, 'sort_length'));
+
+        foreach ($catches as $catch) {
+
+            #$this->buf = str_replace('->' . $catch, '->' . $this->hash($catch, 'var'), $this->buf);
+            $this->buf = preg_replace('/->' . preg_quote($catch) . '(?!\()/', '->' . $this->hash($catch, 'var'), $this->buf);
+
+        }
+
+        return;
 
         /**
          * Match classes definitions
@@ -278,7 +328,7 @@ final class PobsCore {
         $this->out("\n" . 'Scanning for classes...');
         preg_match_all('/class\s+(\w+)(?:\s+extends\s+(\w+))?\s*\{/i', $this->buf, $catches, PREG_SET_ORDER);
 
-        foreach($catches as $catch) {
+        foreach ($catches as $catch) {
 
             $hash = $this->hash($catch[1], 'class');
 
@@ -300,31 +350,11 @@ final class PobsCore {
 
         $this->out('Replacing classes and instances with MD5 keys... Done');
 
-        /*
-         * Match variables
-         * PREG_PATTER_ORDER is unneeded
-         * '("\\$\\(\\(?:\\sw\\|\\s_\\)+\\)" (1 font-lock-variable-name-face)) ; $variable
-         */
-
-        $this->out("\n" . 'Scanning for variables...');
-        preg_match_all('/\$(\w+)/i', $this->buf, $catches, PREG_PATTERN_ORDER);
-        $this->out('Replacing variables with MD5 keys... Done');
-
-        $catches = array_unique($catches[1]);
-        $catches = array_diff($catches, array_merge($this->cfg->get('StdExcVarArray'), $this->cfg->get('UdExcVarArray')));
-        $catches = array_filter($catches, array($this, 'filter_small_values'));
-
-        foreach($catches as $catch) {
-
-            $this->buf = str_replace('$' . $catch, '$V' . $this->hash($catch, 'var'), $this->buf);
-
-        }
-
     }
 
     private function hash($string, $type) {
 
-        switch($type) {
+        switch ($type) {
 
         case 'func':
             $c = 'F';
@@ -337,6 +367,7 @@ final class PobsCore {
             break;
         case 'var':
             $c = 'V';
+            break;
         default:
             $c = 'P';
             break;
@@ -380,6 +411,7 @@ final class PobsCore {
 
         }
 
+        $this->out('');
         $this->out(count($this->tree_hier) . ' file(s) obfuscated with no errors.');
         $this->out(round($this->buf_get_len() / 1024) . ' KB of output written to ' . $this->cfg->get('TargetDir') . '/');
         $this->out('Please execute scripts to ensure they work as intended.');
@@ -433,7 +465,7 @@ final class PobsCore {
 
         $this->out('Creating temporary directory ' . $tmp_dirname);        
         mkdir($tmp_dirname);
-        copy($file_name, $tmp_dirname . '/' . $file_name);
+        copy($file_name, $tmp_dirname . '/' . basename($file_name));
         $this->cfg->set_source_dir($tmp_dirname);
 
     } /*  ----o
@@ -443,7 +475,7 @@ final class PobsCore {
              \_/  */
     public function cleanup_stage_file($file_name) {
 
-        chdir('../');
+        $file_name = basename($file_name);
 
         if (file_exists($file_name . '_pobs')) {
 
@@ -467,16 +499,14 @@ final class PobsCore {
     private function out($st) {
 
         if ($this->opt->get('is_verbose')) {
-
             fputs(STDOUT, $st . "\n");
-
         }
 
     }
 
     private function err($st) {
 
-        // ncurses_beep();
+        // ncurses_beep()
         fputs(STDERR, $st . "\n");
 
     }

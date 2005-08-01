@@ -12,22 +12,12 @@ class ConfigHandler {
     public function __construct($conf_file) {
 
         $this->conf_file  = $conf_file;
-
-        if (!php_check_syntax($this->conf_file, $msg)) {
-
-            fputs(STDERR, 'Syntax errors were detected in ' . $this->conf_file . ":\n\n" . ucfirst($msg) . "\n");
-            exit;
-
-        }
-
-        require_once $this->conf_file;
+        include_once $this->conf_file;
 
         $ar = get_defined_vars();
 
         foreach ($ar as $key => $val) {
-
             $this->$key = $val;
-
         }
 
         $this->set_def_conf_vars();
@@ -50,8 +40,18 @@ class ConfigHandler {
 
     final private function set_def_conf_vars() {
 
-        $this->UdExcDirArray[] = 'SourceDir';
-        $this->UdExcDirArray[] = 'TargetDir';
+#        $this->UdExcDirArray[] = 'SourceDir';
+#        $this->UdExcDirArray[] = 'TargetDir';
+
+        foreach (get_defined_functions() as $val) {
+            $this->StdExcFuncArray[] = $val;
+        }
+
+        foreach (get_declared_classes() as $class) {
+            foreach (get_class_methods($class) as $val) {
+                $this->StdExcFuncArray[] = $val;
+            }
+        }
 
         $this->StripWhiteSpace = (bool) $this->StripWhiteSpace;
 

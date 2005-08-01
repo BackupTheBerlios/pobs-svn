@@ -68,6 +68,8 @@ foreach ($OPT->get('source_dir') as $file_dir) {
     $API->write_target_files();
     $API->time_elapsed();
 
+    chdir('../');
+
     if (is_file($file_dir)) {
         $API->cleanup_stage_file($file_dir);
     }

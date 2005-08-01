@@ -84,7 +84,7 @@
     // Note: this won't strip whitespace between heredocs and will not touch your HTML
     // Leave as boolean!
 
-    $StripWhiteSpace = true;
+    $StripWhiteSpace = false;
 
     // Only files with defined extensions will be processed if you want to
     // process files without any suffix, add "." to the array
@@ -241,6 +241,9 @@
 
     );
 
+    // for ArrayAccess implementation
+    $StdExcFuncArray = array('offsetExists', 'offsetGet', 'offsetSet', 'offsetUnset');
+
     // Types of comments that will be replaced
     // Available types are: '/**/', '//' and '#'
 
@@ -256,14 +259,14 @@
     
     // Variables in this array will be not replaced
     // All variables less than 4 characters long are automatically excluded
-    $UdExcVarArray    = array();
+    $UdExcVarArray    = array('');
 
 /*
 
     'Dummy Entry',
     'foo',
     'tmp',
-    'x', # for($x;$x<10;++$x...
+    'x', for($x;$x<10;++$x...
     'fp',
     'sql',
      'i',
@@ -282,7 +285,7 @@
     $UdExcClassArray   = array();
 
     // Functions in this array will be not replaced
-    $UdExcFuncArray   = array('start', 'open', 'close', 'formatTextSmileCallback');
+    $UdExcFuncArray   = array('start', 'open', 'close', 'format_text_callback', '__autoload', '__construct');
 
     // - Files that will be excluded from obfuscation
     // - Can use shell regexps such as '*cat_*.php'
